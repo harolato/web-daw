@@ -1,5 +1,5 @@
 {
-  "name" : "web-daw",
+  "name": "web-daw",
   "version": "0.1.5",
   "description": "A sample Node.js app using Express 4",
   "main": "index.js",
@@ -23,5 +23,8 @@
     "heroku",
     "express"
   ],
-  "license": "MIT"
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-concat": "^2.6.0"
+  }
 }
