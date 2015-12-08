@@ -9,6 +9,8 @@
 
     <!-- Bootstrap -->
     <link href="assets/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!--custom-->
+    <link href="assets/stylesheets/stylesheet.css" rel="stylesheet">
     <!--ngular-->
     <script src="assets/angular/angular.min.js"></script>
     <script src="app/app.js"></script>
@@ -21,38 +23,10 @@
 </head>
 <body ng-app="waw" ng-controller="mainController as main">
 <h1>{{ main.message }}</h1>
-    <div ng-controller="instrumentController as instr1">
-        <h3 ng-hide="!instr1.nameChange" ng-dblclick="instr1.changeName()">{{instr1.name}}</h3>
-        <input type="text" ng-model="instr1.name" ng-hide="instr1.nameChange"/><span ng-hide="instr1.nameChange" ng-click="instr1.changeName()">Close</span>
-        <div ng-controller="synthController as synth">
-            <button type="button" ng-click="synth.toggleStart()">{{ synth.playing ? "Stop" : "Start" }}</button>
-            <select ng-change="synth.changeType()" ng-model="synth.type">
-                <option value="sine">Sine</option>
-                <option value="square">Square</option>
-                <option value="triangle">Triangle</option>
-            </select>
-            <input type="range" title="{{synth.gain}}" min="0" max="1" step=".001" ng-change="synth.changeVolume()" ng-model="synth.gain" style="-webkit-appearance: slider-vertical">
-            <input type="range" title="{{synth.freq1}}" min="0" max="1000" step="1" ng-change="synth.changeFreq(1)" ng-model="synth.freq1">
-            <input type="range" title="{{synth.freq2}}" min="0" max="1000" step="1" ng-change="synth.changeFreq(2)" ng-model="synth.freq2">
-            <input type="range" title="{{synth.freq3}}" min="0" max="1000" step="1" ng-change="synth.changeFreq(3)" ng-model="synth.freq3">
-        </div>
-    </div>
+<master-gain></master-gain>
+<filter></filter>
+<button add-component="instrument" type="button" ng-click="createNew()">Add new</button>
 <hr/>
-    <div ng-controller="instrumentController as instr2">
-        <h3 ng-hide="!instr2.nameChange" ng-dblclick="instr2.changeName()">{{instr2.name}}</h3>
-        <input type="text" ng-model="instr2.name" ng-hide="instr2.nameChange"/><span ng-hide="instr2.nameChange" ng-click="instr2.changeName()">Close</span>
-        <div ng-controller="synthController as synth2">
-            <button type="button" ng-click="synth2.toggleStart()">{{ synth2.playing ? "Stop" : "Start" }}</button>
-            <select ng-change="synth2.changeType()" ng-model="synth2.type">
-                <option value="sine">Sine</option>
-                <option value="square">Square</option>
-                <option value="triangle">Triangle</option>
-            </select>
-            <input type="range" title="{{synth2.gain}}" min="0" max="1" step=".001" ng-change="synth2.changeVolume()" ng-model="synth2.gain" style="-webkit-appearance: slider-vertical">
-            <input type="range" title="{{synth2.freq1}}" min="0" max="1000" step="1" ng-change="synth2.changeFreq(1)" ng-model="synth2.freq1">
-            <input type="range" title="{{synth2.freq2}}" min="0" max="1000" step="1" ng-change="synth2.changeFreq(2)" ng-model="synth2.freq2">
-            <input type="range" title="{{synth2.freq3}}" min="0" max="1000" step="1" ng-change="synth2.changeFreq(3)" ng-model="synth2.freq3">
-        </div>
-    </div>
+
 </body>
 </html>
