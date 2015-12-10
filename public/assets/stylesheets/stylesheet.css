@@ -1,9 +1,9 @@
-instrument {
+device {
   background-color: rgba(0, 0, 0, 0.5);
   width: 100%;
   float: left;
   padding: 5px; }
-  instrument synth {
+  device synth {
     margin-top: 15px;
     float: left;
     width: 100%;

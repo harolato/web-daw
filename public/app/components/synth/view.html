@@ -5,7 +5,7 @@
     </div>
     <div class="col-sm-2">
         <p>Wave form</p>
-        <select ng-change="changeType()" ng-model="type">
+        <select ng-model="type">
             <option value="sine">Sine</option>
             <option value="square">Square</option>
             <option value="triangle">Triangle</option>
@@ -27,5 +27,11 @@
     <div class="col-sm-2">
         <p>Osc3</p>
         <input size="4" type="text" ng-model="freq3"/><input type="range" title="{{freq3}}" min="0" max="1000" step="1" ng-change="changeFreq(3)" ng-model="freq3">
+        <select ng-model="out" ng-change="changeOutput()">
+            <option value="1">Filter</option>
+            <option value="0">Master Gain</option>
+        </select>
+        <input type="text" ng-model="params.output">
+        <input type="text" ng-model="out">
     </div>
 </div>

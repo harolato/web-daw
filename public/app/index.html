@@ -13,7 +13,8 @@
     <link href="assets/stylesheets/stylesheet.css" rel="stylesheet">
     <!--ngular-->
     <script src="assets/angular/angular.min.js"></script>
-    <script src="app/app.js"></script>
+    <script src="assets/scripts/qwerty-hancock.min.js"></script>
+    <script src="app.js"></script>
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -25,8 +26,23 @@
 <h1>{{ main.message }}</h1>
 <master-gain></master-gain>
 <filter></filter>
-<button add-component="instrument" type="button" ng-click="createNew()">Add new</button>
+<button add-component="device" type="button" ng-click="createNew()">Add new</button>
 <hr/>
+<div ng-controller="devicesController">
 
+</div>
+<div id="keyboard"></div>
+<script>
+    var keyboard = new QwertyHancock({
+        id: 'keyboard',
+        width: 600,
+        height: 150,
+        octaves: 2,
+        startNote: 'A3',
+        whiteNotesColour: 'white',
+        blackNotesColour: 'black',
+        hoverColour: '#f3e939'
+    });
+</script>
 </body>
 </html>
