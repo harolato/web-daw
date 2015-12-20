@@ -7,54 +7,39 @@ directive('device', function ($compile, devicesService) {
     return {
         restrict : "E",
         scope : true,
-        controller : function ($scope, $element) {
-            var o = devicesService.add($scope);
-            $scope.name = o._id;
-            $scope.nameChange = true;
-            $scope.changeName = function () {
-                $scope.nameChange = !$scope.nameChange;
-            }
-            console.log(devicesService.getAll()[0].instance.changeName());
+        link : function ($scope, $element) {
+            var child = $scope.$first;
+            console.log(child);
+            var vm = $scope;
+            // Initialize device object for data binding
+            var o = devicesService.add($element.attr('data-id'),vm);
+            vm.device = o;
+            // Assign default device name
+            vm.device.name = vm.device._id;
+            vm.device.enabled = true;
+            //console.log(vm.device);
+            // Hidden input flag
+            vm.nameChange = true;
+            // Toggle name change input field
+            vm.changeName = function () {
+                vm.nameChange = !vm.nameChange;
+            };
+            // Toggle device state. Enable/Disable
+            vm.toggleEnabled = function () {
+                vm.device.enabled = !vm.device.enabled;
+            };
+            // Toggle note input. Enable/Disable
+            vm.toggleNoteInput = function () {
+                devicesService.toggleNoteInput(vm.device._id)
+            };
+            // output current devices
+            vm.cons = function () {
+                console.log(devicesService.getAll());
+            };
         },
         templateUrl : 'app/components/device/view.html'
     }
 }).
-
-factory('devicesService',['utilitiesService', function(utilitiesService) {
-    var devices = {};
-    devices.list = [];
-    devices.add = function (instance) {
-        var device = {
-            '_id' : utilitiesService.uniqueId(),
-            'name' : null,
-            instance : instance,
-            'input' : [],
-            'output' : []
-        };
-        devices.list.push(device);
-        return device;
-    };
-    devices.get = function ( id ) {
-        var i ;
-        var allDevices = devices.getAll();
-        for ( i = 0 ; i < allDevices.length ; i++) {
-            if ( id === allDevices[i].id ) {
-                return allDevices[i];
-            }
-        }
-    };
-    devices.connect = function (source, destination) {
-        var sourceDevice = devices.get(source);
-        var destinationDevice = devices.get(destination);
-        source.output.push(destination);
-        destination.input.push(source);
-    };
-    devices.getAll = function () {
-        return devices.list;
-    }
-    return devices;
-}]).
-
 controller('devicesController', ['utilitiesService', 'devicesService', function(utilitiesService, devicesService, rootScope) {
     var vm = this;
 }]);
