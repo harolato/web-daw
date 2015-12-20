@@ -3,25 +3,32 @@ controller('mainController',['$scope', function($scope){
     var vm = this;
     vm.message = "WAW";
 }]).
-    directive('addComponent', function($compile) {
+    directive('addComponent' , ['$compile', 'utilitiesService',function($compile, utilitiesService) {
         return {
             restrict : "A",
             scope : true,
             link : function (scope, element , attrs) {
                 scope.createNew = function () {
-                    console.log(scope);
-                    var el = $compile("<" + attrs.addComponent + " instr='asd'></" + attrs.addComponent + ">")(scope);
+                    //console.log(scope);
+                    var el = $compile("<" + attrs.addComponent + "></" + attrs.addComponent + ">")(scope);
+                    if ( attrs.addComponent == "device" ) {
+                        el.attr('data-id', utilitiesService.uniqueId());
+                    } else {
+                        el.attr('shit', 'device');
+                    }
                     element.parent().append(el);
                 }
             }
         }
-    })
+    }])
+    // Audio context object
     .factory('audioCtx', function () {
         var ctx = {};
         var AudioContext = window.AudioContext || window.webkitAudioContext;
         ctx = new AudioContext();
         return ctx;
     })
+    // Master gain object
     .directive('masterGain', function(masterGain, frequencyFilter) {
         return {
             restrict : "E",
@@ -38,7 +45,61 @@ controller('mainController',['$scope', function($scope){
             template : 'Master Gain(Volume)' +
             '<input ng-change="changeVolume()" ng-model="gain" type="range" min="0" max="1" step=".0001">'
         }
-    })
+    }).
+    // Devices storage
+    service('devicesService',['utilitiesService', function(utilitiesService) {
+    this.list = [];
+    this.add = function (id, instance) {
+        // Device model
+        var device = {
+            '_id' : id,
+            'name' : null,
+            device_instance : instance,
+            instrument_instance : null,
+            enabled : true,
+            note_input : (this.list.length == 0),
+            notes : null,
+            effects_chain : null,
+        };
+        // Push initial data to global device array
+        this.list.push(device);
+        //console.log(device);
+        // Return current model for controller
+        return device;
+    };
+    // Selects a device to stream notes from keyboard
+    this.toggleNoteInput = function (id) {
+        var i ;
+        var allDevices = this.getAll();
+        for ( i = 0 ; i < allDevices.length ; i++) {
+            var device = allDevices[i];
+            if ( id == device._id ) {
+                device.note_input = !device.note_input;
+            } else {
+                device.note_input = false;
+            }
+        }
+    };
+    this.get = function ( id ) {
+        var i ;
+        var allDevices = this.getAll();
+        for ( i = 0 ; i < allDevices.length ; i++) {
+            if ( id === allDevices[i].id ) {
+                return allDevices[i];
+            }
+        }
+    };
+    //devices.connect = function (source, destination) {
+    //    var sourceDevice = devices.get(source);
+    //    var destinationDevice = devices.get(destination);
+    //    source.output.push(destination);
+    //    destination.input.push(source);
+    //};
+    this.getAll = function () {
+        return this.list;
+    }
+}])
+    // Filter
     .directive('filter', function(masterGain, frequencyFilter) {
         return {
             restrict : "E",
