@@ -17,6 +17,8 @@ coverage
 .grunt
 gulpfile.js
 
+asd.js
+
 # node-waf configuration
 .lock-wscript
 
