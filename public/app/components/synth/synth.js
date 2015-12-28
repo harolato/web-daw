@@ -5,22 +5,21 @@ angular.module('synth', []).
 directive('synth', function ($compile, audioCtx, masterGain, frequencyFilter) {
     return {
         restrict : "E",
-        scope : true,
+        scope : {
+            shit : '='
+        },
         require: '^device',
         templateUrl : 'app/components/synth/view.html',
-        link : function (a, b, c, d) {
-            console.log(d);
-        },
+        //link : function (a, b, c, d) {
+        //},
         controller : function ($scope, $element) {
             var vm = $scope;
+            console.log(vm.shit);
             vm.audioCtx = audioCtx;
             vm.playing = false;
             vm.gainNode = vm.audioCtx.createGain();
             vm.gain = 0.5;
             vm.type = "sine";
-            vm.freq1 = 400;
-            vm.freq2 = 500;
-            vm.freq3 = 300;
             vm.params = {
                 output : masterGain
             };
@@ -38,24 +37,6 @@ directive('synth', function ($compile, audioCtx, masterGain, frequencyFilter) {
             vm.changeType = function () {
                 vm.oscillatorNode.type = vm.type;
             };
-
-            vm.changeFreq = function (id) {
-                if (vm.playing) {
-                    switch (id) {
-                        case 1 :
-                            vm.oscillatorNode.frequency.value = vm.freq1;
-                            break;
-                        case 2 :
-                            vm.oscillatorNode2.frequency.value = vm.freq2;
-                            break;
-                        case 3 :
-                            vm.oscillatorNode3.frequency.value = vm.freq3;
-                            break;
-                        default:
-                            alert('error');
-                    }
-                }
-            }
             vm.changeVolume = function() {
                 vm.gainNode.gain.value = vm.gain;
             }

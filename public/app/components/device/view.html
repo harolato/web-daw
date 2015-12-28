@@ -1,3 +1,6 @@
-<h5 style="text-transform: lowercase" ng-hide="!nameChange" ng-dblclick="this.changeName()">{{name}}</h5>
-<input type="text" ng-model="name" ng-hide="nameChange"/><span ng-hide="nameChange" ng-click="this.changeName()">Close</span>
+<h5 style="text-transform: lowercase" ng-hide="!nameChange" ng-dblclick="this.changeName()">{{device.name}}</h5>
+<input type="text" ng-model="device.name" ng-hide="nameChange"/><span ng-hide="nameChange" ng-click="this.changeName()">Close</span>
 <button add-component="synth" type="button" ng-click="createNew()">Add new synth</button>
+<button ng-click="cons()">Debug me, pls!!!</button>
+<button ng-click="toggleNoteInput()">Keyboard In:</button>
+<input type="checkbox" ng-model="device.note_input">
