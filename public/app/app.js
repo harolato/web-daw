@@ -1,7 +1,7 @@
 angular.module('waw', ['synth', 'devices']).
 controller('mainController',['$scope', function($scope){
     var vm = this;
-    vm.message = "WAW v2";
+    vm.message = "WAW";
 }]).
     directive('addComponent', function($compile) {
         return {
