@@ -42,7 +42,7 @@ controller('mainController',['$scope', function($scope){
 
                 }
             },
-            template : 'Master Gain(Volume)' +
+            template : 'Master Gain[Volume]' +
             '<input ng-change="changeVolume()" ng-model="gain" type="range" min="0" max="1" step=".0001">'
         }
     }).
