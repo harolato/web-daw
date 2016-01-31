@@ -1,13 +1,17 @@
-device {
-  background-color: rgba(0,0,0, 0.5);
-  width: 100%;
-  float: left;
-  padding:5px;
-  synth {
-    margin-top:15px;
-    float: left;
-    width: 100%;
-    background-color: rgba(255,0,0,0.3);
+.keyboard {
+  .key {
+    display: inline-block;
+    position: relative;
+    width: 50px;
+    height: 150px;
+    border: 1px solid white;
+    cursor: pointer;
+  }
+  .black {
+    background-color: #000;
+  }
+  .white {
+    background-color: #ccc;
   }
 }
 filter {
@@ -21,4 +25,42 @@ master-gain {
   float: left;
   width: 100%;
   background-color: rgba(0,150,150,0.3);
+}
+
+#top-bar {
+  background-color: salmon;
+}
+
+.device-block {
+  margin-bottom: 25px;
+  margin-top: 25px;
+  .device {
+    &.device-disabled {
+      background-color: #2aabd2;
+    }
+    background-color: #def1ff;
+    .note-preview {
+      background-color: #9acfea;
+      height: 100px;
+    }
+  }
+
+
+}
+.slider-outter {
+  .slider  {
+    width:100%;
+    height:25px;
+    background-color: #1b6d85;
+    -webkit-border-radius:5px;
+    -moz-border-radius:5px;
+    border-radius:5px;
+    overflow: hidden;
+    position: relative;
+    .value-bar {
+      height: inherit;
+      width: 58%;
+      background-color: #2aabd2;
+    }
+  }
 }
