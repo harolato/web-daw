@@ -42,7 +42,7 @@ controller('mainController',['$scope', function($scope){
 
                 }
             },
-            template : 'Master Gain(Volume)' +
+            template : 'Master Gain[Volume]' +
             '<input ng-change="changeVolume()" ng-model="gain" type="range" min="0" max="1" step=".0001">'
         }
     }).
@@ -170,11 +170,12 @@ directive('toggleDeviceState', ['$compile', function($compile){
         require : 'ngModel',
         scope : true,
         link : function ($scope, $element, attrs, ngModel) {
-            //console.log(ngModel);
+
             //console.log(ngModel.$viewValue);
 
 
             angular.element(document).ready(function(){
+
                 $scope.Math = window.Math;
                 var slider = $element[0].querySelector('.slider');
                 var sliderValue = slider.querySelector('.value-bar');
@@ -185,6 +186,8 @@ directive('toggleDeviceState', ['$compile', function($compile){
                     ngModel.$setViewValue(value/100);
                     ngModel.$render();
                 }
+                updateModel( (ngModel.$modelValue * 100) );
+                sliderValue.style.width = parseInt($scope.value)  + '%';
                 ngModel.$render = function() {
                     $scope.value = ngModel.$viewValue * 100;
                     sliderValue.style.width = parseInt($scope.value)  + '%';
@@ -225,7 +228,6 @@ directive('toggleDeviceState', ['$compile', function($compile){
             });
         },
         controller : function ( $scope ) {
-            $scope.value = 0;
             $scope.sliderObject = sliderHelper.getSlider($scope.ctrl);
             $scope.sliderObject.value = $scope.value;
 
