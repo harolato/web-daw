@@ -164,6 +164,9 @@ directive('toggleDeviceState', ['$compile', function($compile){
             // Initialize device object for data binding
             var o = devicesService.add($element.attr('data-id'),vm);
             vm.device = o;
+
+            vm.device.enabled = $element.attr('data-enabled');
+
             //vm.device.instrument_instance = instrumentsService.load('simpleSynth', audioCtx, masterGain, vm.device);
             vm.volumeSlider = sliderHelper.getSlider(vm.device);
             vm.device.instrument_instance = InstrumentsService.getInstrument($element.attr('data-instrument'), vm.device);
@@ -208,10 +211,63 @@ directive('toggleDeviceState', ['$compile', function($compile){
             this.scope = vm;
         },
         templateUrl : 'app/components/device/view.html'
-    }
+        }
 }).
 service('devicesService',['utilitiesService','keyboardHelperService','audioCtx', function(utilitiesService, keyboardHelperService, audioCtx) {
     this.list = [];
+    //var notes = [
+    //    {
+    //        start   : "1.2.2",
+    //        end     : "1.1.4",
+    //        note    : "C5",
+    //        velocity: 1
+    //    },
+    //    {
+    //        start   : "1.1.4",
+    //        end     : "2.1.1",
+    //        note    : "D3",
+    //        velocity: 1
+    //    },
+    //    {
+    //        start   : "3.2.4",
+    //        end     : "4.1.4",
+    //        note    : "C3",
+    //        velocity: 1
+    //    },
+    //    {
+    //        start   : "4.1.4",
+    //        end     : "5.1.4",
+    //        note    : "A5",
+    //        velocity: 1
+    //    },
+    //    {
+    //        start   : "5.2.2",
+    //        end     : "6.1.4",
+    //        note    : "C3",
+    //        velocity: 1
+    //    }
+    //];
+    var i;
+    var notes = [];
+    function randomNumber(min, max, incl) {
+        incl = (incl) ? 1 : 0;
+        return Math.floor(Math.random() * ( max - min + incl )) + min;
+    }
+    var letters = ["C","D","E","F","G","A","B"];
+    for ( i = 0; i < 1000 ; i++) {
+        var bar = randomNumber(0,100, true);
+        var qt = randomNumber(0,3, true);
+        var eighth = randomNumber(0,3, true);
+        var start = bar + "." + qt + "." + eighth;
+        var end = randomNumber(bar,bar + randomNumber(0,6), true) + "." + randomNumber(qt,3, true) + "." + randomNumber(eighth,3, true);
+        notes.push({
+            start   : start,
+            end     : end,
+            note    : letters[randomNumber(0,6, true)] + randomNumber(2, 7),
+            velocity: "0." + randomNumber(0,9)
+        });
+    }
+    console.log(notes);
     this.add = function (id, instance) {
         // Device model
         var device = {
@@ -221,7 +277,7 @@ service('devicesService',['utilitiesService','keyboardHelperService','audioCtx',
             instrument_instance : null,
             enabled : true,
             note_input : (this.list.length == 0),
-            notes : null,
+            notes : notes,
             gainNode : audioCtx.createGain(),
             effects_chain : null,
         };

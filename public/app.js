@@ -1,7 +1,164 @@
-angular.module('waw', [ 'Devices', 'Instruments', 'keyboard']).
-controller('mainController',['$scope', function($scope){
+function ADSR(audioContext){
+    var node = audioContext.createGain()
+
+    var voltage = node._voltage = getVoltage(audioContext)
+    var value = scale(voltage)
+    var startValue = scale(voltage)
+    var endValue = scale(voltage)
+
+    node._startAmount = scale(startValue)
+    node._endAmount = scale(endValue)
+
+    node._multiplier = scale(value)
+    node._multiplier.connect(node)
+    node._startAmount.connect(node)
+    node._endAmount.connect(node)
+
+    node.value = value.gain
+    node.startValue = startValue.gain
+    node.endValue = endValue.gain
+
+    node.startValue.value = 0
+    node.endValue.value = 0
+
+    Object.defineProperties(node, props)
+    return node
+}
+
+var props = {
+
+    attack: { value: 0, writable: true },
+    decay: { value: 0, writable: true },
+    sustain: { value: 1, writable: true },
+    release: {value: 0, writable: true },
+
+    getReleaseDuration: {
+        value: function(){
+            return this.release
+        }
+    },
+
+    start: {
+        value: function(at){
+            var target = this._multiplier.gain
+            var startAmount = this._startAmount.gain
+            var endAmount = this._endAmount.gain
+
+            this._voltage.start(at)
+            this._decayFrom = this._decayFrom = at+this.attack
+            this._startedAt = at
+
+            var sustain = this.sustain
+
+            target.cancelScheduledValues(at)
+            startAmount.cancelScheduledValues(at)
+            endAmount.cancelScheduledValues(at)
+
+            endAmount.setValueAtTime(0, at)
+
+            if (this.attack){
+                target.setValueAtTime(0, at)
+                target.linearRampToValueAtTime(1, at + this.attack)
+
+                startAmount.setValueAtTime(1, at)
+                startAmount.linearRampToValueAtTime(0, at + this.attack)
+            } else {
+                target.setValueAtTime(1, at)
+                startAmount.setValueAtTime(0, at)
+            }
+
+            if (this.decay){
+                target.setTargetAtTime(sustain, this._decayFrom, getTimeConstant(this.decay))
+            }
+        }
+    },
+
+    stop: {
+        value: function(at, isTarget){
+            if (isTarget){
+                at = at - this.release
+            }
+
+            var endTime = at + this.release
+            if (this.release){
+
+                var target = this._multiplier.gain
+                var startAmount = this._startAmount.gain
+                var endAmount = this._endAmount.gain
+
+                target.cancelScheduledValues(at)
+                startAmount.cancelScheduledValues(at)
+                endAmount.cancelScheduledValues(at)
+
+                var expFalloff = getTimeConstant(this.release)
+
+                // truncate attack (required as linearRamp is removed by cancelScheduledValues)
+                if (this.attack && at < this._decayFrom){
+                    var valueAtTime = getValue(0, 1, this._startedAt, this._decayFrom, at)
+                    target.linearRampToValueAtTime(valueAtTime, at)
+                    startAmount.linearRampToValueAtTime(1-valueAtTime, at)
+                    startAmount.setTargetAtTime(0, at, expFalloff)
+                }
+
+                endAmount.setTargetAtTime(1, at, expFalloff)
+                target.setTargetAtTime(0, at, expFalloff)
+            }
+
+            this._voltage.stop(endTime)
+            return endTime
+        }
+    },
+
+    onended: {
+        get: function(){
+            return this._voltage.onended
+        },
+        set: function(value){
+            this._voltage.onended = value
+        }
+    }
+
+}
+
+var flat = new Float32Array([1,1])
+function getVoltage(context){
+    var voltage = context.createBufferSource()
+    var buffer = context.createBuffer(1, 2, context.sampleRate)
+    buffer.getChannelData(0).set(flat)
+    voltage.buffer = buffer
+    voltage.loop = true
+    return voltage
+}
+
+function scale(node){
+    var gain = node.context.createGain()
+    node.connect(gain)
+    return gain
+}
+
+function getTimeConstant(time){
+    return Math.log(time+1)/Math.log(100)
+}
+
+function getValue(start, end, fromTime, toTime, at){
+    var difference = end - start
+    var time = toTime - fromTime
+    var truncateTime = at - fromTime
+    var phase = truncateTime / time
+    return start + phase * difference
+}
+
+angular.module('waw', [ 'Devices', 'Instruments', 'keyboard', 'Sequencer']).
+controller('mainController',['$scope', 'sequencerService', function($scope, sequencer){
     var vm = this;
     vm.message = "WAW v2";
+
+    vm.play = function () {
+        sequencer.play();
+    };
+    vm.stop = function () {
+        sequencer.stop();
+    };
 }]).
     directive('addComponent' , ['$compile', 'utilitiesService',function($compile, utilitiesService) {
         return {
@@ -26,6 +183,7 @@ controller('mainController',['$scope', function($scope){
         var ctx = {};
         var AudioContext = window.AudioContext || window.webkitAudioContext;
         ctx = new AudioContext();
+        console.log(ctx);
         return ctx;
     })
     // Master gain object
@@ -36,7 +194,7 @@ controller('mainController',['$scope', function($scope){
                 value : '='
             },
             controller : function ( $scope, $element ) {
-                $scope.gain = 0.5;
+                $scope.gain = 0.2;
                 $scope.changeVolume = function () {
                     masterGain.gain.value = $scope.gain;
 
@@ -276,6 +434,9 @@ directive('toggleDeviceState', ['$compile', function($compile){
             // Initialize device object for data binding
             var o = devicesService.add($element.attr('data-id'),vm);
             vm.device = o;
+
+            vm.device.enabled = $element.attr('data-enabled');
+
             //vm.device.instrument_instance = instrumentsService.load('simpleSynth', audioCtx, masterGain, vm.device);
             vm.volumeSlider = sliderHelper.getSlider(vm.device);
             vm.device.instrument_instance = InstrumentsService.getInstrument($element.attr('data-instrument'), vm.device);
@@ -320,10 +481,63 @@ directive('toggleDeviceState', ['$compile', function($compile){
             this.scope = vm;
         },
         templateUrl : 'app/components/device/view.html'
-    }
+        }
 }).
 service('devicesService',['utilitiesService','keyboardHelperService','audioCtx', function(utilitiesService, keyboardHelperService, audioCtx) {
     this.list = [];
+    //var notes = [
+    //    {
+    //        start   : "1.2.2",
+    //        end     : "1.1.4",
+    //        note    : "C5",
+    //        velocity: 1
+    //    },
+    //    {
+    //        start   : "1.1.4",
+    //        end     : "2.1.1",
+    //        note    : "D3",
+    //        velocity: 1
+    //    },
+    //    {
+    //        start   : "3.2.4",
+    //        end     : "4.1.4",
+    //        note    : "C3",
+    //        velocity: 1
+    //    },
+    //    {
+    //        start   : "4.1.4",
+    //        end     : "5.1.4",
+    //        note    : "A5",
+    //        velocity: 1
+    //    },
+    //    {
+    //        start   : "5.2.2",
+    //        end     : "6.1.4",
+    //        note    : "C3",
+    //        velocity: 1
+    //    }
+    //];
+    var i;
+    var notes = [];
+    function randomNumber(min, max, incl) {
+        incl = (incl) ? 1 : 0;
+        return Math.floor(Math.random() * ( max - min + incl )) + min;
+    }
+    var letters = ["C","D","E","F","G","A","B"];
+    for ( i = 0; i < 1000 ; i++) {
+        var bar = randomNumber(0,100, true);
+        var qt = randomNumber(0,3, true);
+        var eighth = randomNumber(0,3, true);
+        var start = bar + "." + qt + "." + eighth;
+        var end = randomNumber(bar,bar + randomNumber(0,6), true) + "." + randomNumber(qt,3, true) + "." + randomNumber(eighth,3, true);
+        notes.push({
+            start   : start,
+            end     : end,
+            note    : letters[randomNumber(0,6, true)] + randomNumber(2, 7),
+            velocity: "0." + randomNumber(0,9)
+        });
+    }
+    console.log(notes);
     this.add = function (id, instance) {
         // Device model
         var device = {
@@ -333,7 +547,7 @@ service('devicesService',['utilitiesService','keyboardHelperService','audioCtx',
             instrument_instance : null,
             enabled : true,
             note_input : (this.list.length == 0),
-            notes : null,
+            notes : notes,
             gainNode : audioCtx.createGain(),
             effects_chain : null,
         };
@@ -480,37 +694,37 @@ angular.module('keyboard',[]).directive('keyboard',['$compile', '$window','$root
             221: 'F#u',
             220: 'Gu'
         };
-    var getFrequencyOfNote = function (note) {
-        var notes = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'],
-            key_number,
-            octave;
-
-        if (note.length === 3) {
-            octave = note.charAt(2);
-        } else {
-            octave = note.charAt(1);
-        }
-        key_number = notes.indexOf(note.slice(0, -1));
-
-        if (key_number < 3) {
-            key_number = key_number + 12 + ((octave - 1) * 12) + 1;
-        } else {
-            key_number = key_number + ((octave - 1) * 12) + 1;
-        }
-
-        return 440 * Math.pow(2, (key_number - 49) / 12);
-    };
     return {
+        getFrequencyOfNote : function (note) {
+            var notes = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'],
+                key_number,
+                octave;
+
+            if (note.length === 3) {
+                octave = note.charAt(2);
+            } else {
+                octave = note.charAt(1);
+            }
+            key_number = notes.indexOf(note.slice(0, -1));
+
+            if (key_number < 3) {
+                key_number = key_number + 12 + ((octave - 1) * 12) + 1;
+            } else {
+                key_number = key_number + ((octave - 1) * 12) + 1;
+            }
+
+            return 440 * Math.pow(2, (key_number - 49) / 12);
+        },
         keyboardUser : null,
         mousedown : function (e, callback) {
             var el = angular.element(e.target);
             var note = el.data().$scope.note;
-            callback(note, getFrequencyOfNote(note));
+            callback(note, this.getFrequencyOfNote(note));
         },
         mouseup : function (e, callback) {
             var el = angular.element(e.target);
             var note = el.data().$scope.note;
-            callback(note, getFrequencyOfNote(note));
+            callback(note, this.getFrequencyOfNote(note));
         },
         register : function (cb) {
             listeners.push(cb);
@@ -522,6 +736,84 @@ angular.module('keyboard',[]).directive('keyboard',['$compile', '$window','$root
             return this.keyboardUser;
         }
     }
+}]);
+angular.module('Sequencer',['Devices', 'keyboard']).
+controller('sequencerController', [function(){
+    //var vm = $scope;
+}])
+.service('sequencerService', ['devicesService', 'keyboardHelperService','$timeout','$interval', 'sequencerWorkerService','audioCtx', function(devices, keyboard, $timeout, $interval, worker, ctx){
+    this.devices = devices.getAll();
+    var BPM = 120;
+    var beatLen = 60/BPM;
+
+    var playOsc = function (start, end, freq) {
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        var freq = keyboard.getFrequencyOfNote(freq);
+        osc.frequency.value = freq;
+
+        osc.start(start);
+        osc.stop(end);
+    };
+
+    this.play = function () {
+        var earliest = 9999;
+        this.devices.forEach(function(device){
+            var device = device;
+            if ( device.enabled ) {
+                device.notes.forEach(function(note){
+                    var start = note.start.split('.');
+                    var end = note.end.split('.');
+                    var noteStartTime =
+                        ( start[0] * beatLen) +
+                        ( start[2] * (beatLen/4) ) +
+                        ( start[1] * ( (beatLen/4) / 4 ) );
+                    if ( noteStartTime < earliest ) {
+                        earliest = noteStartTime;
+                    }
+                    var noteEndTime =
+                        ( end[0] * beatLen) +
+                        ( end[2] * (beatLen/4) ) +
+                        ( end[1] * ( (beatLen/4) / 4 ) );
+                    playOsc(noteStartTime, noteEndTime, note.note);
+                    console.log([
+                        {
+                            start   : noteStartTime,
+                            end     : noteEndTime,
+                            note    : note.note
+                        }
+                    ]);
+                });
+            }
+        });
+        console.log(earliest);
+    }
+
+}])
+.service('sequencerWorkerService', [function () {
+    var SequencerWorker = function (  ) {
+        this.worker = new Worker('app/components/sequencer/sequencerWorker.js');
+        this.worker.onerror = function (e) {
+            console.log(e);
+        }
+        this.worker.onmessage = function (e) {
+            console.log(e);
+        };
+        this.worker.postMessage({"interval": 100});
+    };
+    SequencerWorker.prototype.stop = function () {
+        this.worker.postMessage("stop");
+    };
+    SequencerWorker.prototype.start = function () {
+        this.worker.postMessage("start");
+    };
+    SequencerWorker.prototype.changeInterval = function ( lookaheadTime ) {
+        this.worker.postMessage({"interval" : lookaheadTime});
+    }
+
+    return new SequencerWorker();
 }]);
 
 /**
@@ -556,7 +848,6 @@ service('anotherSynth', ['audioCtx', function(audioCtx){
 
         oscillatorNode.frequency.value = freq;
         oscillatorNode.type = this.type;
-
 
         oscillatorNode.start(0);
         this.chords.push(oscillatorNode);
@@ -613,7 +904,6 @@ service('simpleSynth', ['audioCtx','masterGain', function(audioCtx){
 
         oscillatorNode.frequency.value = freq;
         oscillatorNode.type = this.type;
-
 
         oscillatorNode.start(0);
         this.chords.push(oscillatorNode);

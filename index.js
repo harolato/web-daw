@@ -2,7 +2,8 @@ var express = require('express');
 var cool = require('cool-ascii-faces');
 var app = express();
 var path = require('path');
-
+var adsr = require('adsr');
+console.log(adsr);
 app.set('port', (process.env.PORT || 5000));
 
 app.use(express.static(path.join(process.cwd() + '/public/')));

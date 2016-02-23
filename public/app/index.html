@@ -32,20 +32,21 @@
             <h3>{{main.message}}</h3>
         </div>
         <div class="col-sm-6 text-right">
-            <h3>{controls}</h3>
+            <h3><span ng-click="main.play()">Play</span></h3>
+            <h3><span ng-click="main.stop()">Stop</span></h3>
         </div>
     </div>
 </div>
 
 <div class="container" ng-controller="devicesController as devices">
     <div class="row device-block">
-        <div class="device" device data-id="square synth" ng-class="getDeviceClass()" data-instrument="simple synthesizer"></div>
+        <div class="device" device data-id="square synth" data-enabled="true" ng-class="getDeviceClass()" data-instrument="simple synthesizer"></div>
     </div>
     <div class="row device-block">
-        <div class="device" device data-id="sine synth" ng-class="getDeviceClass()" data-instrument="Another synthesizer"></div>
+        <div class="device" device data-id="sine synth" enabled="false" ng-class="getDeviceClass()" data-instrument="Another synthesizer"></div>
     </div>
     <div class="row device-block">
-        <div class="device" device data-id="another square synth" ng-class="getDeviceClass()" data-instrument="simple synthesizer"></div>
+        <div class="device" device data-id="another square synth" enabled="false" ng-class="getDeviceClass()" data-instrument="simple synthesizer"></div>
     </div>
 </div>
 <!--<master-gain></master-gain>-->
@@ -58,7 +59,7 @@
     </div>
 </div>
 <div style="clear: both;"></div>
-<keyboard octave="3" class="keyboard"></keyboard>
+<keyboard octave="2" class="keyboard"></keyboard>
 
 </body>
 </html>

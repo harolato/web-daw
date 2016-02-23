@@ -31,7 +31,6 @@ service('anotherSynth', ['audioCtx', function(audioCtx){
         oscillatorNode.frequency.value = freq;
         oscillatorNode.type = this.type;
 
-
         oscillatorNode.start(0);
         this.chords.push(oscillatorNode);
         return oscillatorNode;
