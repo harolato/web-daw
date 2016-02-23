@@ -22,7 +22,7 @@ service('simpleSynth', ['audioCtx','masterGain', function(audioCtx){
         this.gainNode.gain.value = this.params.gain;
     };
 
-    Instrument.prototype.play = function(freq) {
+    Instrument.prototype.play = function(start, end,velocity, freq) {
 
         oscillatorNode = audioCtx.createOscillator();
 
@@ -30,10 +30,12 @@ service('simpleSynth', ['audioCtx','masterGain', function(audioCtx){
 
         oscillatorNode.frequency.value = freq;
         oscillatorNode.type = this.type;
+        //this.params.device.gainNode.gain.setValueAtTime(velocity, audioCtx.currentTime + start);
 
-        oscillatorNode.start(0);
-        this.chords.push(oscillatorNode);
-        return oscillatorNode;
+        oscillatorNode.start(audioCtx.currentTime + start);
+        oscillatorNode.stop(audioCtx.currentTime + end);
+        //this.chords.push(oscillatorNode);
+        //return oscillatorNode;
     };
 
     Instrument.prototype.stop = function(frequency) {

@@ -268,6 +268,7 @@ controller('mainController',['$scope', 'sequencerService', function($scope, sequ
 });
 
 
+
 /**
  * Created by 12059_000 on 12/9/2015.
  */
@@ -435,6 +436,7 @@ directive('toggleDeviceState', ['$compile', function($compile){
             var o = devicesService.add($element.attr('data-id'),vm);
             vm.device = o;
 
+
             vm.device.enabled = $element.attr('data-enabled');
 
             //vm.device.instrument_instance = instrumentsService.load('simpleSynth', audioCtx, masterGain, vm.device);
@@ -446,6 +448,8 @@ directive('toggleDeviceState', ['$compile', function($compile){
             vm.$watch('params.gain', function(val) {
                 if ( !isNaN(val) ) {
                     vm.device.gainNode.gain.value = val;
+                } else {
+                    console.log("nan");
                 }
             });
             //console.log(vm.device);
@@ -478,6 +482,215 @@ directive('toggleDeviceState', ['$compile', function($compile){
                     'device-disabled' : !vm.device.enabled
                 }
             };
+
+            var instance = vm.device;
+            function randomNumber(min, max, incl) {
+                incl = (incl) ? 1 : 0;
+                return Math.floor(Math.random() * ( max - min + incl )) + min;
+            }
+            if ( vm.device.name ==  "sine synth") {
+                vm.device.notes = [
+                    { // 1/8 G , 1st bar beginning , 1st quarter note beginning
+                        target  : instance,
+                        start   : "0.0.0",
+                        end     : "0.1.0",
+                        note    : "G2",
+                        velocity: parseFloat("0." + randomNumber(3,9)) // Velocity indicated note volume
+                    },
+                    {// 1/8 G
+                        target  : instance,
+                        start   : "0.2.0",
+                        end     : "0.3.0",
+                        note    : "G2",
+                        velocity: parseFloat("0." + randomNumber(3,9))
+                    },
+                    {// 1/8 E    2nd quarter note. 1/8+1/8 = 1/4
+                        target  : instance,
+                        start   : "0.0.1",
+                        end     : "0.1.1",
+                        note    : "E2",
+                        velocity: parseFloat("0." + randomNumber(3,9))
+                    },
+                    {// 1/8 C
+                        target  : instance,
+                        start   : "0.2.1",
+                        end     : "0.3.1",
+                        note    : "C2",
+                        velocity: parseFloat("0." + randomNumber(3,9))
+                    },
+                    {// 1/8 G
+                        target  : instance,
+                        start   : "0.0.2",
+                        end     : "0.1.2",
+                        note    : "G2",
+                        velocity: parseFloat("0." + randomNumber(3,9))
+                    },
+                    {// 1/8 G
+                        target  : instance,
+                        start   : "0.2.2",
+                        end     : "0.3.2",
+                        note    : "G2",
+                        velocity: parseFloat("0." + randomNumber(3,9))
+                    },
+                    {// 1/8 E
+                        target  : instance,
+                        start   : "0.0.3",
+                        end     : "0.1.3",
+                        note    : "E2",
+                        velocity: parseFloat("0." + randomNumber(3,9))
+                    },
+                    {// 1/8 C
+                        target  : instance,
+                        start   : "0.2.3",
+                        end     : "0.3.3",
+                        note    : "C2",
+                        velocity: parseFloat("0." + randomNumber(3,9))
+                    },
+                    {// 1/8 F   2nd bar beginning
+                        target  : instance,
+                        start   : "1.0.0",
+                        end     : "1.1.0",
+                        note    : "F2",
+                        velocity: parseFloat("0." + randomNumber(3,9))
+                    },
+                    {// 1/8 A
+                        target  : instance,
+                        start   : "1.2.0",
+                        end     : "1.3.0",
+                        note    : "A2",
+                        velocity: parseFloat("0." + randomNumber(3,9))
+                    },
+                    {// 1/8 C
+                        target  : instance,
+                        start   : "1.0.1",
+                        end     : "1.1.1",
+                        note    : "C3",
+                        velocity: parseFloat("0." + randomNumber(3,9))
+                    },
+                    {// 1/8 A
+                        target  : instance,
+                        start   : "1.2.1",
+                        end     : "1.3.1",
+                        note    : "A2",
+                        velocity: parseFloat("0." + randomNumber(3,9))
+                    },
+                    {// 1/4 G
+                        target  : instance,
+                        start   : "1.0.2",
+                        end     : "1.3.2",
+                        note    : "G2",
+                        velocity: parseFloat("0." + randomNumber(3,9))
+                    },
+                    {// 1/4 G
+                        target  : instance,
+                        start   : "1.0.3",
+                        end     : "1.3.3",
+                        note    : "G2",
+                        velocity: parseFloat("0." + randomNumber(3,9))
+                    }];
+            } else if ( vm.device.name == "square synth" ) {
+                vm.device.notes = [
+                    { // 1/8 G , 1st bar beginning , 1st quarter note beginning
+                        target  : instance,
+                        start   : "0.0.0",
+                        end     : "0.1.0",
+                        note    : "G4",
+                        velocity: 1  // Velocity indicated note volume
+                    },
+                    {// 1/8 G
+                        target  : instance,
+                        start   : "0.2.0",
+                        end     : "0.3.0",
+                        note    : "G4",
+                        velocity: 1
+                    },
+                    {// 1/8 E    2nd quarter note. 1/8+1/8 = 1/4
+                        target  : instance,
+                        start   : "0.0.1",
+                        end     : "0.1.1",
+                        note    : "E4",
+                        velocity: 1
+                    },
+                    {// 1/8 C
+                        target  : instance,
+                        start   : "0.2.1",
+                        end     : "0.3.1",
+                        note    : "C4",
+                        velocity: 1
+                    },
+                    {// 1/8 G
+                        target  : instance,
+                        start   : "0.0.2",
+                        end     : "0.1.2",
+                        note    : "G4",
+                        velocity: 1
+                    },
+                    {// 1/8 G
+                        target  : instance,
+                        start   : "0.2.2",
+                        end     : "0.3.2",
+                        note    : "G4",
+                        velocity: 1
+                    },
+                    {// 1/8 E
+                        target  : instance,
+                        start   : "0.0.3",
+                        end     : "0.1.3",
+                        note    : "E4",
+                        velocity: 1
+                    },
+                    {// 1/8 C
+                        target  : instance,
+                        start   : "0.2.3",
+                        end     : "0.3.3",
+                        note    : "C4",
+                        velocity: 1
+                    },
+                    {// 1/8 F   2nd bar beginning
+                        target  : instance,
+                        start   : "1.0.0",
+                        end     : "1.1.0",
+                        note    : "F4",
+                        velocity: 1
+                    },
+                    {// 1/8 A
+                        target  : instance,
+                        start   : "1.2.0",
+                        end     : "1.3.0",
+                        note    : "A4",
+                        velocity: 1
+                    },
+                    {// 1/8 C
+                        target  : instance,
+                        start   : "1.0.1",
+                        end     : "1.1.1",
+                        note    : "C5",
+                        velocity: 1
+                    },
+                    {// 1/8 A
+                        target  : instance,
+                        start   : "1.2.1",
+                        end     : "1.3.1",
+                        note    : "A4",
+                        velocity: 1
+                    },
+                    {// 1/4 G
+                        target  : instance,
+                        start   : "1.0.2",
+                        end     : "1.3.2",
+                        note    : "G4",
+                        velocity: 1
+                    },
+                    {// 1/4 G
+                        target  : instance,
+                        start   : "1.0.3",
+                        end     : "1.3.3",
+                        note    : "G4",
+                        velocity: 1
+                    }];
+            }
+
+
             this.scope = vm;
         },
         templateUrl : 'app/components/device/view.html'
@@ -485,59 +698,65 @@ directive('toggleDeviceState', ['$compile', function($compile){
 }).
 service('devicesService',['utilitiesService','keyboardHelperService','audioCtx', function(utilitiesService, keyboardHelperService, audioCtx) {
     this.list = [];
-    //var notes = [
-    //    {
-    //        start   : "1.2.2",
-    //        end     : "1.1.4",
-    //        note    : "C5",
-    //        velocity: 1
-    //    },
-    //    {
-    //        start   : "1.1.4",
-    //        end     : "2.1.1",
-    //        note    : "D3",
-    //        velocity: 1
-    //    },
-    //    {
-    //        start   : "3.2.4",
-    //        end     : "4.1.4",
-    //        note    : "C3",
-    //        velocity: 1
-    //    },
-    //    {
-    //        start   : "4.1.4",
-    //        end     : "5.1.4",
-    //        note    : "A5",
-    //        velocity: 1
-    //    },
-    //    {
-    //        start   : "5.2.2",
-    //        end     : "6.1.4",
-    //        note    : "C3",
-    //        velocity: 1
-    //    }
-    //];
-    var i;
-    var notes = [];
+    var notes = [
+        {
+            start   : "0.0.0",
+            end     : "0.0.1",
+            note    : "G5",
+            velocity: 1
+        },
+        {
+            start   : "0.0.1",
+            end     : "0.0.2",
+            note    : "G3",
+            velocity: 1
+        },
+        {
+            start   : "0.0.2",
+            end     : "0.0.3",
+            note    : "E3",
+            velocity: 1
+        },
+        {
+            start   : "0.0.3",
+            end     : "0.0.4",
+            note    : "C5",
+            velocity: 1
+        },
+        //{
+        //    start   : "5.2.2",
+        //    end     : "6.1.4",
+        //    note    : "C3",
+        //    velocity: 1
+        //}
+    ];
+
+
     function randomNumber(min, max, incl) {
         incl = (incl) ? 1 : 0;
         return Math.floor(Math.random() * ( max - min + incl )) + min;
     }
-    var letters = ["C","D","E","F","G","A","B"];
-    for ( i = 0; i < 1000 ; i++) {
-        var bar = randomNumber(0,100, true);
-        var qt = randomNumber(0,3, true);
-        var eighth = randomNumber(0,3, true);
-        var start = bar + "." + qt + "." + eighth;
-        var end = randomNumber(bar,bar + randomNumber(0,6), true) + "." + randomNumber(qt,3, true) + "." + randomNumber(eighth,3, true);
-        notes.push({
-            start   : start,
-            end     : end,
-            note    : letters[randomNumber(0,6, true)] + randomNumber(2, 7),
-            velocity: "0." + randomNumber(0,9)
-        });
+
+    var genNotes = function ( device ) {
+        var i;
+        var notes = [];
+        var letters = ["C","D","E","F","G","A","B"];
+        for ( i = 0; i < 100 ; i++) {
+            var bar = randomNumber(0,50, true);
+            var qt = randomNumber(0,3, true);
+            var eighth = randomNumber(0,3, true);
+            var start = bar + "." + qt + "." + eighth;
+            var end = randomNumber(bar,bar + randomNumber(0,1), true) + "." + randomNumber(qt,3, true) + "." + randomNumber(eighth,3, true);
+            notes.push({
+                target  : device,
+                start   : start,
+                end     : end,
+                note    : letters[randomNumber(0,6, true)] + randomNumber(3, 7),
+                velocity: "0." + randomNumber(4,9)
+            });
+        }
+        return notes;
     }
-    console.log(notes);
     this.add = function (id, instance) {
         // Device model
         var device = {
@@ -547,7 +766,7 @@ service('devicesService',['utilitiesService','keyboardHelperService','audioCtx',
             instrument_instance : null,
             enabled : true,
             note_input : (this.list.length == 0),
-            notes : notes,
+            notes :null,
             gainNode : audioCtx.createGain(),
             effects_chain : null,
         };
@@ -595,7 +814,6 @@ service('devicesService',['utilitiesService','keyboardHelperService','audioCtx',
 controller('devicesController', ['utilitiesService', 'devicesService', function(utilitiesService, devicesService) {
     var vm = this;
 }]);
-
 angular.module('Instruments',['simpleSynth', 'anotherSynth']).
 
 controller('InstrumentsController', ['InstrumentsService', 'utilitiesService', function (InstrumentsService, utilitiesService) {
@@ -743,7 +961,8 @@ controller('sequencerController', [function(){
 }])
 .service('sequencerService', ['devicesService', 'keyboardHelperService','$timeout','$interval', 'sequencerWorkerService','audioCtx', function(devices, keyboard, $timeout, $interval, worker, ctx){
     this.devices = devices.getAll();
-    var BPM = 120;
+
+    var BPM = 10;
     var beatLen = 60/BPM;
 
     var playOsc = function (start, end, freq) {
@@ -758,37 +977,116 @@ controller('sequencerController', [function(){
         osc.stop(end);
     };
 
+    var sortNotes = function (a, b) {
+
+        var astart  = breakNoteCoordinates(a.start);
+        var bstart  = breakNoteCoordinates(b.start);
+
+        if ( astart['bar'] > bstart['bar'] ) {
+            return 1;
+        } else if ( astart['bar'] == bstart['bar'] ) {
+            if ( astart['quarter'] == bstart['quarter'] ) {
+                if ( astart['eighth'] == bstart['eighth'] ) {
+                    return 0;
+                } else if ( astart['eighth'] > bstart['eighth'] ) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+            } else if ( astart['quarter'] > bstart['quarter'] ) {
+                return 1;
+            } else {
+                return -1;
+            }
+        } else {
+            return -1
+        }
+    };
+
+    var breakNoteCoordinates = function (coords) {
+        var brake = coords.split(".");
+        return {
+            bar     : parseInt(brake[0]*1),
+            quarter : parseInt(brake[2]*1),
+            eighth  : parseInt(brake[1]*1)
+        };
+    };
+
+    var noteLength = function ( type ) {
+        switch ( type ) {
+            case "bar"      : return beatLen;
+            case "quarter"  : return beatLen/4;
+            case "eighth"   : return ((beatLen/4)/4);
+            default: return false;
+        }
+    };
+
+    var calculateNoteTiming = function (note) {
+        var start = breakNoteCoordinates(note.start);
+        var end = breakNoteCoordinates(note.end);
+
+        var noteStartTime =
+            ( start['bar'] * noteLength("bar")) +
+            ( start['quarter'] * noteLength("quarter") ) +
+            ( start['eighth'] * noteLength("eighth") );
+        var noteEndTime =
+            ( end['bar'] * noteLength("bar")) +
+            ( end['quarter'] * noteLength("quarter") ) +
+            ( end['eighth'] * noteLength("eighth") );
+        return {
+            start  : noteStartTime,
+            end    : noteEndTime
+        };
+    };
+
+    var nextNote = function () {
+
+    };
+
+
+
     this.play = function () {
-        var earliest = 9999;
+        var allTracks = [];
         this.devices.forEach(function(device){
             var device = device;
             if ( device.enabled ) {
-                device.notes.forEach(function(note){
-                    var start = note.start.split('.');
-                    var end = note.end.split('.');
-                    var noteStartTime =
-                        ( start[0] * beatLen) +
-                        ( start[2] * (beatLen/4) ) +
-                        ( start[1] * ( (beatLen/4) / 4 ) );
-                    if ( noteStartTime < earliest ) {
-                        earliest = noteStartTime;
-                    }
-                    var noteEndTime =
-                        ( end[0] * beatLen) +
-                        ( end[2] * (beatLen/4) ) +
-                        ( end[1] * ( (beatLen/4) / 4 ) );
-                    playOsc(noteStartTime, noteEndTime, note.note);
-                    console.log([
-                        {
-                            start   : noteStartTime,
-                            end     : noteEndTime,
-                            note    : note.note
-                        }
-                    ]);
-                });
+                //device.notes.sort(sortNotes);
+                //console.log(device.notes);
+                allTracks = allTracks.concat(device.notes);
+
+                //console.log({
+                //    "Starts at:" : calculateNoteTiming(device.notes[0]),
+                //    "Ends at:" : calculateNoteTiming(device.notes[device.notes.length-1])
+                //});
+
+                //device.notes.forEach(function(note){
+                //
+                //    var timing = calculateNoteTiming(note);
+                //
+                //    playOsc(timing.start, timing.end, note.note);
+                //    //console.log([
+                //    //    {
+                //    //        start   : timing.start,
+                //    //        end     : timing.end,
+                //    //        note    : note.note
+                //    //    }
+                //    //]);
+                //});
             }
         });
-        console.log(earliest);
+
+
+        allTracks.sort(sortNotes);
+        allTracks.forEach(function( note ){
+            var timing = calculateNoteTiming(note);
+            //console.log(note.target);
+            note.target.instrument_instance.play(timing.start, timing.end,note.velocity, keyboard.getFrequencyOfNote(note.note));
+        });
+        //console.log(allTracks);
+
+    };
+    this.stop = function (){
+        var ap = AudioParam.cancelScheduledValues(ctx.currentTime);
     }
 
 }])
@@ -797,7 +1095,7 @@ controller('sequencerController', [function(){
         this.worker = new Worker('app/components/sequencer/sequencerWorker.js');
         this.worker.onerror = function (e) {
             console.log(e);
-        }
+        };
         this.worker.onmessage = function (e) {
             console.log(e);
         };
@@ -814,6 +1112,11 @@ controller('sequencerController', [function(){
     }
 
     return new SequencerWorker();
+}])
+.service('notesFactory', [function() {
+    return {
+
+    }
 }]);
 
 /**
@@ -840,7 +1143,7 @@ service('anotherSynth', ['audioCtx', function(audioCtx){
         this.gainNode.gain.value = this.params.gain;
     };
 
-    Instrument.prototype.play = function(freq) {
+    Instrument.prototype.play = function(start, end,velocity, freq) {
 
         oscillatorNode = audioCtx.createOscillator();
 
@@ -848,10 +1151,13 @@ service('anotherSynth', ['audioCtx', function(audioCtx){
 
         oscillatorNode.frequency.value = freq;
         oscillatorNode.type = this.type;
+        console.log(velocity);
+        //this.params.device.gainNode.gain.setValueAtTime(velocity, audioCtx.currentTime + start);
 
-        oscillatorNode.start(0);
-        this.chords.push(oscillatorNode);
-        return oscillatorNode;
+        oscillatorNode.start(audioCtx.currentTime + start);
+        oscillatorNode.stop(audioCtx.currentTime + end);
+        //this.chords.push(oscillatorNode);
+        //return oscillatorNode;
     };
 
     Instrument.prototype.stop = function(frequency) {
@@ -896,7 +1202,7 @@ service('simpleSynth', ['audioCtx','masterGain', function(audioCtx){
         this.gainNode.gain.value = this.params.gain;
     };
 
-    Instrument.prototype.play = function(freq) {
+    Instrument.prototype.play = function(start, end,velocity, freq) {
 
         oscillatorNode = audioCtx.createOscillator();
 
@@ -904,10 +1210,12 @@ service('simpleSynth', ['audioCtx','masterGain', function(audioCtx){
 
         oscillatorNode.frequency.value = freq;
         oscillatorNode.type = this.type;
+        //this.params.device.gainNode.gain.setValueAtTime(velocity, audioCtx.currentTime + start);
 
-        oscillatorNode.start(0);
-        this.chords.push(oscillatorNode);
-        return oscillatorNode;
+        oscillatorNode.start(audioCtx.currentTime + start);
+        oscillatorNode.stop(audioCtx.currentTime + end);
+        //this.chords.push(oscillatorNode);
+        //return oscillatorNode;
     };
 
     Instrument.prototype.stop = function(frequency) {
