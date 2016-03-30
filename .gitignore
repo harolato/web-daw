@@ -36,3 +36,5 @@ public/assets/*
 !public/assets/font-awesome/css/*
 !public/assets/font-awesome/css/
 !public/assets/stylesheets/*
+!public/assets/fonts/*
+!public/assets/images/*
