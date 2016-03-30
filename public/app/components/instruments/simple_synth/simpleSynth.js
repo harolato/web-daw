@@ -4,6 +4,8 @@
 angular.module('simpleSynth', []).
 service('simpleSynth', ['audioCtx','masterGain', function(audioCtx){
     var Instrument = function ( id, device ) {
+        this.name = "SimpleSynth";
+        this.id = "simple_synth";
         this.params = {
             id : id,
             gain : 1,
@@ -22,7 +24,7 @@ service('simpleSynth', ['audioCtx','masterGain', function(audioCtx){
         this.gainNode.gain.value = this.params.gain;
     };
 
-    Instrument.prototype.play = function(start, end,velocity, freq) {
+    Instrument.prototype.play = function(freq) {
 
         oscillatorNode = audioCtx.createOscillator();
 
@@ -31,11 +33,16 @@ service('simpleSynth', ['audioCtx','masterGain', function(audioCtx){
         oscillatorNode.frequency.value = freq;
         oscillatorNode.type = this.type;
         //this.params.device.gainNode.gain.setValueAtTime(velocity, audioCtx.currentTime + start);
+        oscillatorNode.start(0);
+        //oscillatorNode.stop(end);
+        this.chords.push(oscillatorNode);
+        return oscillatorNode;
+    };
 
-        oscillatorNode.start(audioCtx.currentTime + start);
-        oscillatorNode.stop(audioCtx.currentTime + end);
-        //this.chords.push(oscillatorNode);
-        //return oscillatorNode;
+    Instrument.prototype.stopAll = function () {
+        for ( var i = 0 ; i < this.chords.length ; i++ ) {
+            this.chords[i].stop(0);
+        }
     };
 
     Instrument.prototype.stop = function(frequency) {

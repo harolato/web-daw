@@ -1,14 +1,12 @@
-.keyboard .key {
-  display: inline-block;
-  position: relative;
-  width: 50px;
-  height: 150px;
-  border: 1px solid white;
-  cursor: pointer; }
-.keyboard .black {
-  background-color: #000; }
-.keyboard .white {
-  background-color: #ccc; }
+@import url(https://fonts.googleapis.com/css?family=Roboto+Slab:100,400,700);
+@import url(https://fonts.googleapis.com/css?family=Raleway:400,800);
+@font-face {
+  src: url("../fonts/Aller_Std_Rg.ttf");
+  font-family: 'Aller Regular'; }
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #d6d6d6; }
 
 filter {
   padding: 5px;
@@ -22,31 +20,425 @@ master-gain {
   width: 100%;
   background-color: rgba(0, 150, 150, 0.3); }
 
-#top-bar {
-  background-color: salmon; }
+.device {
+  border-bottom: 1px solid #b3e2d9;
+  color: #fff;
+  position: relative;
+  background-color: #00b2a3; }
+  .device .device-name {
+    font-family: 'Aller Regular';
+    text-align: center;
+    margin-top: 10px; }
+  .device .settings-icon {
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #fff; }
+    .device .settings-icon:hover {
+      color: #107161; }
+  .device .toggle-device-state, .device .toggle-keyboard-input {
+    font-family: "Roboto Slab"; }
+    .device .toggle-device-state span, .device .toggle-keyboard-input span {
+      font-size: 1.8em;
+      position: relative;
+      top: 3px; }
+  .device .toggle-keyboard-input span.fa-circle {
+    color: #d53e7a; }
+  .device .toggle-keyboard-input span.fa-circle-o {
+    color: #003b4a; }
+  .device .toggle-device-state span.fa-toggle-off {
+    color: #003b4a; }
+  .device.device-disabled {
+    background-color: #209884; }
+  .device .note-preview {
+    background-image: url("../images/notesheet-grid.png");
+    box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.4);
+    background-repeat: repeat;
+    height: 135px; }
+    .device .note-preview .note-wrapper {
+      position: relative; }
+      .device .note-preview .note-wrapper .note {
+        position: absolute;
+        background: #003b4a;
+        -webkit-border-radius: 5px;
+        -moz-border-radius: 5px;
+        border-radius: 5px;
+        width: 50px;
+        height: 15px; }
 
-.device-block {
-  margin-bottom: 25px;
-  margin-top: 25px; }
-  .device-block .device {
-    background-color: #def1ff; }
-    .device-block .device.device-disabled {
-      background-color: #2aabd2; }
-    .device-block .device .note-preview {
-      background-color: #9acfea;
-      height: 100px; }
+.slider-outter {
+  margin-top: 5px;
+  margin-bottom: 5px; }
+  .slider-outter .slider {
+    width: 100%;
+    height: 25px;
+    border: 1px solid #008b86;
+    background-color: #b3e2d9;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative; }
+    .slider-outter .slider .value-bar {
+      height: inherit;
+      background-color: #008f83;
+      padding: 2px 0px 0px 15px;
+      font-family: "Aller Regular"; }
 
-.slider-outter .slider {
-  width: 100%;
-  height: 25px;
-  background-color: #1b6d85;
+.inl {
+  display: inline-block; }
+
+input {
+  background-color: #b3e2d9;
+  outline: none;
+  border: none;
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   border-radius: 5px;
-  overflow: hidden;
-  position: relative; }
-  .slider-outter .slider .value-bar {
-    height: inherit;
-    background-color: #2aabd2; }
+  padding: 5px;
+  color: #003b4a;
+  font-family: "Roboto Slab"; }
+
+::-webkit-input-placeholder {
+  /* WebKit, Blink, Edge */
+  color: rgba(0, 59, 74, 0.5); }
+
+:-moz-placeholder {
+  /* Mozilla Firefox 4 to 18 */
+  color: rgba(0, 59, 74, 0.5);
+  opacity: 1; }
+
+::-moz-placeholder {
+  /* Mozilla Firefox 19+ */
+  color: rgba(0, 59, 74, 0.5);
+  opacity: 1; }
+
+:-ms-input-placeholder {
+  /* Internet Explorer 10-11 */
+  color: rgba(0, 59, 74, 0.5); }
+
+#top-bar {
+  height: 70px;
+  background-image: url("../images/top-bar-background.png");
+  background-color: #00b2a3;
+  margin-bottom: 15px;
+  background-repeat: no-repeat; }
+  #top-bar h1 {
+    font-family: Raleway;
+    font-weight: 800;
+    color: #fff;
+    position: relative;
+    bottom: 7px; }
+  #top-bar .new-project {
+    position: relative;
+    top: 14px; }
+    #top-bar .new-project .plus-button {
+      background-color: #fff;
+      border-radius: 100%;
+      width: 35px;
+      height: 35px;
+      margin-right: 10px;
+      cursor: pointer; }
+      #top-bar .new-project .plus-button span {
+        font-size: 2em;
+        position: relative;
+        top: 6px;
+        left: 7px;
+        color: #003b4a; }
+    #top-bar .new-project .action-buttons span {
+      cursor: pointer;
+      color: #003b4a;
+      margin-left: 5px;
+      margin-right: 5px; }
+  #top-bar .play-button {
+    width: 50px;
+    height: 50px;
+    background: #0c908b;
+    -webkit-border-radius: 100%;
+    -moz-border-radius: 100%;
+    border-radius: 100%;
+    position: relative;
+    top: 9px;
+    cursor: pointer; }
+    #top-bar .play-button span {
+      position: relative;
+      top: 9px;
+      left: -5px;
+      font-size: 2.5em;
+      color: #fff; }
+  #top-bar .bpm {
+    position: relative;
+    top: 20px; }
+
+#current-time-box, #scale-timeline-box {
+  background: #0c908b;
+  display: inline-block;
+  padding: 5px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  color: #fff; }
+
+.devices-container {
+  margin-top: 25px;
+  padding-top: 15px;
+  overflow: hidden; }
+  .devices-container .timescale {
+    background-image: url("../images/timeline-segment.png");
+    background-repeat: repeat-x;
+    height: 12px;
+    position: relative; }
+    .devices-container .timescale .time-seeker {
+      position: absolute;
+      height: 1000px;
+      width: 1px;
+      background: #fff;
+      top: 0px;
+      left: 200px;
+      z-index: 999; }
+    .devices-container .timescale span {
+      display: inline-block;
+      position: relative;
+      bottom: 18px;
+      left: -18px;
+      margin-right: 57px; }
+    .devices-container .timescale:last-child {
+      margin-right: 0; }
+
+.add-new-device-container {
+  margin-top: 100px; }
+  .add-new-device-container .add-new-device {
+    width: 400px;
+    height: 130px;
+    background-color: #3bc2b5; }
+    .add-new-device-container .add-new-device .big-plus-button {
+      width: 165px;
+      height: 130px;
+      display: inline-block;
+      background-image: url("../images/button-bg.png");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-color: #0c908b; }
+      .add-new-device-container .add-new-device .big-plus-button::after {
+        content: '\f067 ';
+        font-family: FontAwesome;
+        position: absolute;
+        font-size: 6.5em;
+        top: 8px;
+        left: 62px;
+        color: #fff; }
+    .add-new-device-container .add-new-device .instrument-list {
+      display: inline-block;
+      overflow: auto;
+      height: inherit;
+      width: 231px; }
+      .add-new-device-container .add-new-device .instrument-list::-webkit-scrollbar {
+        width: 12px; }
+      .add-new-device-container .add-new-device .instrument-list::-webkit-scrollbar-track {
+        background-color: #00b2a3;
+        -webkit-border-radius: 2px;
+        -moz-border-radius: 2px;
+        border-radius: 2px; }
+      .add-new-device-container .add-new-device .instrument-list::-webkit-scrollbar-thumb {
+        background-color: #244c5a;
+        -webkit-border-radius: 2px;
+        -moz-border-radius: 2px;
+        border-radius: 2px;
+        background-image: url("../images/scrollbaricon-v.png");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 8px 8px; }
+      .add-new-device-container .add-new-device .instrument-list ul {
+        height: inherit;
+        list-style-type: none;
+        padding-top: 5px;
+        padding-left: 25px;
+        margin: 0; }
+        .add-new-device-container .add-new-device .instrument-list ul li {
+          cursor: pointer;
+          font-family: "Roboto Slab";
+          font-weight: bold; }
+          .add-new-device-container .add-new-device .instrument-list ul li:hover {
+            color: #e8404c; }
+
+#instrument-settings {
+  background: #003b4a;
+  color: #fff;
+  position: fixed;
+  left: 50%;
+  transform: translate(-50%, 0);
+  bottom: 0px;
+  z-index: 1000;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px; }
+  #instrument-settings .settings-keyboard {
+    position: relative;
+    width: 99.2%;
+    height: 100px;
+    margin: 0px auto;
+    overflow: hidden; }
+    #instrument-settings .settings-keyboard .keyboard {
+      position: absolute;
+      bottom: 0px;
+      left: 0px;
+      width: 200%;
+      height: inherit; }
+      #instrument-settings .settings-keyboard .keyboard ul {
+        margin: 0;
+        padding: 0; }
+      #instrument-settings .settings-keyboard .keyboard .key {
+        display: inline-block;
+        position: relative;
+        width: 40px;
+        height: 100px;
+        border-right: 1px solid #008f83;
+        cursor: pointer; }
+        #instrument-settings .settings-keyboard .keyboard .key span {
+          color: #000;
+          position: absolute;
+          bottom: 10px;
+          left: 5px;
+          font-family: Raleway;
+          font-weight: 100; }
+      #instrument-settings .settings-keyboard .keyboard .black {
+        background-color: #000; }
+      #instrument-settings .settings-keyboard .keyboard .white {
+        background-color: #fff; }
+  #instrument-settings .instrument-control-wrapper select {
+    border: none;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    background-color: #b3e2d9;
+    padding: 4px;
+    color: #003b4a;
+    font-family: "Roboto Slab";
+    overflow: hidden; }
+  #instrument-settings .instrument-control-wrapper .instrument-control-outer-wrapper {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    width: 100%;
+    margin-bottom: 20px; }
+    #instrument-settings .instrument-control-wrapper .instrument-control-outer-wrapper::-webkit-scrollbar {
+      width: 10px; }
+    #instrument-settings .instrument-control-wrapper .instrument-control-outer-wrapper::-webkit-scrollbar-track {
+      background-color: #00b2a3;
+      -webkit-border-radius: 5px;
+      -moz-border-radius: 5px;
+      border-radius: 5px; }
+    #instrument-settings .instrument-control-wrapper .instrument-control-outer-wrapper::-webkit-scrollbar-thumb {
+      background-color: #244c5a;
+      -webkit-border-radius: 5px;
+      -moz-border-radius: 5px;
+      border-radius: 5px;
+      background-image: url("../images/scrollbaricon.png");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: auto 12px; }
+  #instrument-settings .instrument-control-wrapper .stack-vertically {
+    display: block; }
+  #instrument-settings .instrument-control-wrapper .stack-horizontally {
+    display: inline-block;
+    margin-right: 30px;
+    position: relative; }
+  #instrument-settings .instrument-control-wrapper .add-effect {
+    width: 250px;
+    height: 75px;
+    position: relative;
+    bottom: 45px; }
+    #instrument-settings .instrument-control-wrapper .add-effect .effect-list {
+      display: inline-block;
+      width: 150px;
+      height: inherit;
+      background-color: #00a99c;
+      position: relative;
+      right: 4px;
+      overflow: auto; }
+      #instrument-settings .instrument-control-wrapper .add-effect .effect-list::-webkit-scrollbar {
+        width: 10px; }
+      #instrument-settings .instrument-control-wrapper .add-effect .effect-list::-webkit-scrollbar-track {
+        background-color: #00b2a3;
+        -webkit-border-radius: 2px;
+        -moz-border-radius: 2px;
+        border-radius: 2px; }
+      #instrument-settings .instrument-control-wrapper .add-effect .effect-list::-webkit-scrollbar-thumb {
+        background-color: #244c5a;
+        -webkit-border-radius: 2px;
+        -moz-border-radius: 2px;
+        border-radius: 2px;
+        background-image: url("../images/scrollbaricon-v.png");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 8px 8px; }
+      #instrument-settings .instrument-control-wrapper .add-effect .effect-list ul {
+        height: inherit;
+        list-style-type: none;
+        padding-top: 5px;
+        padding-left: 25px;
+        margin: 0; }
+        #instrument-settings .instrument-control-wrapper .add-effect .effect-list ul li {
+          cursor: pointer;
+          font-family: "Roboto Slab";
+          font-weight: bold; }
+          #instrument-settings .instrument-control-wrapper .add-effect .effect-list ul li:hover {
+            color: #e8404c; }
+    #instrument-settings .instrument-control-wrapper .add-effect .big-plus-icon {
+      width: 95px;
+      height: inherit;
+      background: #097879;
+      position: relative;
+      cursor: pointer;
+      display: inline-block; }
+      #instrument-settings .instrument-control-wrapper .add-effect .big-plus-icon:hover {
+        background-color: #25787b; }
+      #instrument-settings .instrument-control-wrapper .add-effect .big-plus-icon::after {
+        content: '\f067 ';
+        font-family: FontAwesome;
+        position: absolute;
+        font-size: 3.5em;
+        top: 4px;
+        left: 29px; }
+  #instrument-settings .instrument-control-wrapper .control-block {
+    margin-bottom: 25px;
+    width: 200px; }
+    #instrument-settings .instrument-control-wrapper .control-block .label {
+      display: block;
+      font-size: 1em;
+      text-align: center;
+      margin-bottom: 10px; }
+  #instrument-settings .close-button {
+    position: absolute;
+    top: 4px;
+    right: 10px;
+    cursor: pointer;
+    z-index: 10; }
+    #instrument-settings .close-button:before {
+      content: '\f0ab';
+      font-family: FontAwesome;
+      color: #d53e7a;
+      font-size: 1.5em; }
+  #instrument-settings .top-line {
+    position: relative;
+    margin-top: 15px;
+    margin-left: 25px;
+    margin-bottom: 30px; }
+    #instrument-settings .top-line * {
+      display: inline-block; }
+    #instrument-settings .top-line .device-name-bar .device-name {
+      font-family: "Aller Regular";
+      font-size: 1.6em; }
+    #instrument-settings .top-line input {
+      margin-left: 5px;
+      margin-right: 5px; }
+    #instrument-settings .top-line select {
+      background: #003b4a;
+      outline: none;
+      border: none; }
+    #instrument-settings .top-line .midi-control-bar {
+      margin-left: 20px;
+      font-family: Raleway;
+      font-size: 1.2em; }
 
 /*# sourceMappingURL=stylesheet.css.map */

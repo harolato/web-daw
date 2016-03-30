@@ -7,19 +7,57 @@ angular.module('keyboard',[]).directive('keyboard',['$compile', '$window','$root
     return {
         restrict : 'E',
         scope : {
-            octave : '='
+            octave : '=',
+            octaves : '='
         },
-        link : function ($scope,element,attributes) {
+        link : function ($scope,element) {
             var vm = $scope;
             vm.notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-            vm.notes.forEach(function(v, i){
-                vm.notes[i] = v + vm.octave;
+            vm.notesGenerated = [];
+            //console.log(vm.octaves);
+            //vm.notes.forEach(function(v){
+            for ( var  o = 0 ; o < vm.octaves ; o++ ) {
+                //vm.notes[i] = v + o;
+                //console.log(v + "" + o);
+                vm.notesGenerated = vm.notesGenerated.concat(vm.notes);
+            };
+            var octaveCounter = vm.octave;
+            vm.notesGenerated.forEach(function(v, i){
+                vm.notesGenerated[i] += octaveCounter;
+                console.log((i+1) % 12)
+                if ( (i+1) % 12 == 0 && i != 0 ) {
+                    octaveCounter++;
+                }
             });
+            //});
+
+            //vm.notesGenerated.sort(function (a, b) {
+            //    var aNote = (a.split('#')[1]) ? a.split('#')[0]: a.split("")[0];
+            //    var aOctave = (a.split('#')[1]) ? a.split('#')[1]: a.split("")[1];
+            //    var aHash = (a.split('#')[1]) ? aNote + "#" : aNote;
+            //    var bNote = (b.split('#')[1]) ? b.split('#')[0]: b.split("")[0];
+            //    var bOctave = (b.split('#')[1]) ? b.split('#')[1]: b.split("")[1];
+            //    var bHash = (b.split('#')[1]) ? bNote + "#" : bNote;
+            //
+            //    if ( aOctave > bOctave ) {
+            //        if ( vm.notes.indexOf(aHash) > vm.notes.indexOf(bHash) ) {
+            //            return 1;
+            //        }
+            //    } else if ( a === b) {
+            //        return 0;
+            //    } else {
+            //        if ( vm.notes.indexOf(aHash) > vm.notes.indexOf(bHash) ) {
+            //            return 1;
+            //        }
+            //    }
+            //    return -1;
+            //});
+            console.log(vm.notesGenerated);
             vm.getClass = function ( note ) {
                 //console.log([ vm.notes[note], ]);
                 return {
-                    black : (vm.notes[note].split('#')[1]),
-                    white : (!vm.notes[note].split('#')[1]),
+                    black : (vm.notesGenerated[note].split('#')[1]),
+                    white : (!vm.notesGenerated[note].split('#')[1]),
                     key : true
                 };
             };

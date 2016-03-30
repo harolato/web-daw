@@ -4,6 +4,8 @@
 angular.module('anotherSynth', []).
 service('anotherSynth', ['audioCtx', function(audioCtx){
     var Instrument = function ( id, device ) {
+        this.name = "AnotherSynth";
+        this.id = "another_synth"
         this.params = {
             id : id,
             gain : 0.5,
@@ -37,6 +39,12 @@ service('anotherSynth', ['audioCtx', function(audioCtx){
         oscillatorNode.stop(audioCtx.currentTime + end);
         //this.chords.push(oscillatorNode);
         //return oscillatorNode;
+    };
+
+    Instrument.prototype.stopAll = function () {
+        for ( var i = 0 ; i < this.chords.length ; i++ ) {
+            this.chords[i].stop(0);
+        }
     };
 
     Instrument.prototype.stop = function(frequency) {

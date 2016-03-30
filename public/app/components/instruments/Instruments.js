@@ -1,6 +1,35 @@
-angular.module('Instruments',['simpleSynth', 'anotherSynth']).
+angular.module('Instruments',['simpleSynth', 'anotherSynth'])
+.directive('instrumentControl', [function(){
+    return {
+        restrict : "A",
+        scope : true,
+        link : function ($scope, $el, $attr) {
+            $scope.getTemplate = function () {
+                return 'app/components/instruments/' + $scope.device.instrument_instance.id + '/view.html'
+            }
+            $scope
+        },
+        controller : function ($scope) {
+            $scope.instrument = $scope.device.instrument_instance;
+        },
+        template : '<div class="instrument-control-outer-wrapper" ng-include="getTemplate()"></div>'
+    };
+}])
+.directive('addEffect', [function(){
+    return {
+        restrict : "A",
+        scope : true,
+        transclude : true,
+        link : function ($scope, $el, $attr) {
 
-controller('InstrumentsController', ['InstrumentsService', 'utilitiesService', function (InstrumentsService, utilitiesService) {
+        },
+        controller : function ($scope) {
+            $scope.instrument = $scope.device.instrument_instance;
+        },
+        templateUrl : 'app/components/instruments/addEffectsDirective.html'
+    };
+}])
+.controller('InstrumentsController', ['InstrumentsService', 'utilitiesService', function (InstrumentsService, utilitiesService) {
     var vm = this;
     vm.instruments = InstrumentsService;
     //console.log(vm.instruments);
@@ -8,8 +37,8 @@ controller('InstrumentsController', ['InstrumentsService', 'utilitiesService', f
 }]).
 service('InstrumentsService',['simpleSynth', 'anotherSynth','utilitiesService', function(simpleSynth, anotherSynth, utilitiesService){
     this.availableInstruments = {
-        "simple synthesizer" : simpleSynth,
-        "Another synthesizer" : anotherSynth
+        "simple_synth" : simpleSynth,
+        "another_synth" : anotherSynth
     };
     this.getInstrument = function ( name, device ) {
         var id = utilitiesService.uniqueId();

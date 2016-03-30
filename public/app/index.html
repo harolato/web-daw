@@ -26,40 +26,109 @@
     <![endif]-->
 </head>
 <body ng-app="waw" ng-controller="mainController as main">
-<div id="top-bar" class="container-fluid">
+<div id="top-bar" class="container">
     <div class="row">
         <div class="col-sm-6">
-            <h3>{{main.message}}</h3>
+            <div class="row">
+                <div class="col-sm-5">
+                    <h1>WEB DAW</h1>
+                </div>
+                <div class="col-sm-7">
+                    <div class="new-project">
+                        <div class="plus-button inl">
+                            <span class="fa fa-plus"></span>
+                        </div>
+                        <div class="name-input inl">
+                            <input type="text" placeholder="New project name...">
+                        </div>
+                        <div class="action-buttons inl">
+                            <span class="fa fa-save"></span>
+                            <span class="fa fa-close"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="col-sm-6 text-right">
-            <h3><span ng-click="main.play()">Play</span></h3>
-            <h3><span ng-click="main.stop()">Stop</span></h3>
+            <div class="row">
+                <div class="col-sm-10">
+                    <input class="bpm" placeholder="120BPM" size="3">
+                </div>
+                <div class="col-sm-2">
+                    <div align="right" class="play-button">
+                        <span class="fa fa fa-play"></span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="container" ng-controller="devicesController as devices">
-    <div class="row device-block">
-        <div class="device" device data-id="square synth" data-enabled="true" ng-class="getDeviceClass()" data-instrument="simple synthesizer"></div>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-6">
+            <div id="current-time-box">
+                Current time: <span>00:22:500</span>
+            </div>
+        </div>
+        <div class="col-sm-6 text-right">
+            <div align="right" id="scale-timeline-box">
+                Scale timeline: <span>+</span><span>-</span>
+            </div>
+        </div>
     </div>
-    <div class="row device-block">
-        <div class="device" device data-id="sine synth" enabled="false" ng-class="getDeviceClass()" data-instrument="Another synthesizer"></div>
+</div>
+
+<div class="container devices-container" ng-controller="devicesController as devices">
+    <div class="row">
+        <div class="col-sm-9 col-sm-offset-3 timescale">
+            <span ng-repeat="n in [1,2,3,4,5,6,7,8,9,10,11,12]">{{n}}</span>
+            <div class="time-seeker"></div>
+        </div>
     </div>
-    <div class="row device-block">
-        <div class="device" device data-id="another square synth" enabled="false" ng-class="getDeviceClass()" data-instrument="simple synthesizer"></div>
+    <div class="device row" device identification="squaresynth" enabled="true" ng-class="getDeviceClass()" instrument="simple_synth"></div>
+
+    <div class="device row device-disabled" device identification="sinesynth" enabled="false" ng-class="getDeviceClass()" instrument="another_synth"></div>
+
+    <div class="device row" device identification="anothersquaresynth" enabled="false" ng-class="getDeviceClass()" instrument="simple_synth"></div>
+
+</div>
+<div class="container add-new-device-container">
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="add-new-device">
+                <div class="big-plus-button"></div>
+                <div class="instrument-list">
+                    <ul>
+                        <li>Instrument...</li>
+                        <li>Instrument...</li>
+                        <li>Instrument...</li>
+                        <li>Instrument...</li>
+                        <li>Instrument...</li>
+                        <li>Instrument...</li>
+                        <li>Instrument...</li>
+                        <li>Instrument...</li>
+                        <li>Instrument...</li>
+                        <li>Instrument...</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 <!--<master-gain></master-gain>-->
 <!--<filter></filter>-->
 <!--<button add-component="device" type="button" ng-click="createNew()">Add new</button>-->
-<hr/>
-<div ng-controller="InstrumentsController as instruments">
-    <div ng-repeat="(key, value) in instruments.instruments.availableInstruments">
-        {{key}}
-    </div>
-</div>
+<!--<hr/>-->
+<!--<div ng-controller="InstrumentsController as instruments">-->
+    <!--<div ng-repeat="(key, value) in instruments.instruments.availableInstruments">-->
+        <!--{{key}}-->
+    <!--</div>-->
+<!--</div>-->
 <div style="clear: both;"></div>
-<keyboard octave="2" class="keyboard"></keyboard>
+<!--<keyboard octave="2" class="keyboard"></keyboard>-->
+<div id="instrument-settings" class="container">
 
+</div>
 </body>
 </html>

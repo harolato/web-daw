@@ -1,37 +1,57 @@
-<div class="row" style="padding:5px;">
-    <div class="col-sm-2">
-        <p>Play Chord</p>
-        <button type="button" ng-click="toggleStart()">{{ playing ? "Stop" : "Start" }}</button>
-    </div>
-    <div class="col-sm-2">
-        <p>Wave form</p>
-        <select ng-model="type">
+<div class="stack-horizontally">
+    <div class="control-block stack-vertically">
+        <span class="label">Wave form</span>
+        <select ng-model="instrument.type">
             <option value="sine">Sine</option>
             <option value="square">Square</option>
             <option value="triangle">Triangle</option>
         </select>
     </div>
-    <div class="col-sm-2">
-        <p>Gain(Volume)</p>
-        <input size="1" type="text" ng-model="gain"/>
-        <input type="range" title="{{gain}}" min="0" max="1" step=".001" ng-change="changeVolume()" ng-model="gain" style="-webkit-appearance: slider-vertical">
-    </div>
-    <div class="col-sm-2">
-        <p>Osc1</p>
-        <input size="4" type="text" ng-model="freq1"/><input type="range" title="{{freq1}}" min="0" max="1000" step="1" ng-change="changeFreq(1)" ng-model="freq1">
-    </div>
-    <div class="col-sm-2">
-        <p>Osc2</p>
-        <input size="4" type="text" ng-model="freq2"/><input type="range" title="{{freq2}}" min="0" max="1000" step="1" ng-change="changeFreq(2)" ng-model="freq2">
-    </div>
-    <div class="col-sm-2">
-        <p>Osc3</p>
-        <input size="4" type="text" ng-model="freq3"/><input type="range" title="{{freq3}}" min="0" max="1000" step="1" ng-change="changeFreq(3)" ng-model="freq3">
-        <select ng-model="out" ng-change="changeOutput()">
-            <option value="1">Filter</option>
-            <option value="0">Master Gain</option>
-        </select>
-        <input type="text" ng-model="params.output">
-        <input type="text" ng-model="out">
+    <div class="control-block stack-vertically">
+        <span class="label">Gain(Volume)</span>
+        <div slider class="slider-outter" ng-model="instrument.params.gain" min="0" max="1"></div>
     </div>
 </div>
+<div class="stack-horizontally">
+    <div class="control-block stack-vertically">
+        <span class="label">Wave form</span>
+        <select ng-model="instrument.type">
+            <option value="sine">Sine</option>
+            <option value="square">Square</option>
+            <option value="triangle">Triangle</option>
+        </select>
+    </div>
+    <div class="control-block stack-vertically">
+        <span class="label">Gain(Volume)</span>
+        <div slider class="slider-outter" ng-model="instrument.params.gain" min="0" max="1"></div>
+    </div>
+</div>
+<div class="stack-horizontally">
+    <div class="control-block stack-vertically">
+        <span class="label">Wave form</span>
+        <select ng-model="instrument.type">
+            <option value="sine">Sine</option>
+            <option value="square">Square</option>
+            <option value="triangle">Triangle</option>
+        </select>
+    </div>
+    <div class="control-block stack-vertically">
+        <span class="label">Gain(Volume)</span>
+        <div slider class="slider-outter" ng-model="instrument.params.gain" min="0" max="1"></div>
+    </div>
+</div>
+<div class="stack-horizontally">
+    <div class="control-block stack-vertically">
+        <span class="label">Wave form</span>
+        <select ng-model="instrument.type">
+            <option value="sine">Sine</option>
+            <option value="square">Square</option>
+            <option value="triangle">Triangle</option>
+        </select>
+    </div>
+    <div class="control-block stack-vertically">
+        <span class="label">Gain(Volume)</span>
+        <div slider class="slider-outter" ng-model="instrument.params.gain" min="0" max="1"></div>
+    </div>
+</div>
+<div class="stack-horizontally add-effect" add-effect></div>

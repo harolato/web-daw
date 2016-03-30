@@ -148,17 +148,11 @@ function getValue(start, end, fromTime, toTime, at){
     return start + phase * difference
 }
 
-angular.module('waw', [ 'Devices', 'Instruments', 'keyboard', 'Sequencer']).
-controller('mainController',['$scope', 'sequencerService', function($scope, sequencer){
+angular.module('waw', [ 'Devices', 'Instruments', 'keyboard', 'Sequencer', 'midiHandler']).
+controller('mainController',['$scope', 'midiHandlerService', function($scope, midi){
     var vm = this;
+    vm.midi = midi;
     vm.message = "WAW v2";
-
-    vm.play = function () {
-        sequencer.play();
-    };
-    vm.stop = function () {
-        sequencer.stop();
-    };
 }]).
     directive('addComponent' , ['$compile', 'utilitiesService',function($compile, utilitiesService) {
         return {
@@ -180,10 +174,9 @@ controller('mainController',['$scope', 'sequencerService', function($scope, sequ
     }])
     // Audio context object
     .factory('audioCtx', function () {
-        var ctx = {};
+        var ctx = null;
         var AudioContext = window.AudioContext || window.webkitAudioContext;
         ctx = new AudioContext();
-        console.log(ctx);
         return ctx;
     })
     // Master gain object

@@ -6,7 +6,7 @@ directive('notesPreview', [function(){
     return {
         restrict : "A",
         require : "^device",
-        template : '<p>Preview of current notes</p>'
+        template : ''
     }
 }]).
 directive('toggleDeviceState', ['$compile', function($compile){
@@ -151,26 +151,47 @@ directive('toggleDeviceState', ['$compile', function($compile){
 .directive('device', function ($compile, devicesService, InstrumentsService, masterGain, sliderHelper) {
     return {
         restrict : "A",
-        scope : true,
-        link : function (scope, element, attributes) {
-
+        scope : {
+            instrument_name : '@instrument',
+            identification : '@',
+            enabled : '@',
+            type : '@device'
         },
-        controller : function ($scope, $element) {
-            var vm = $scope;
 
+        link : function (scope, el, attr){
+            //var ctr = angular.element(el[0].querySelector('div[instrument-control]'));
+            ////console.log(scope);
+            //ctr.attr('instr', scope.device.instrument_instance.id);
+            scope.$watch('identification', function (n){
+                console.log("watch: ",n);
+            });
+
+            scope.closeSettings = function () {
+                var settings = angular.element(document.querySelector('#instrument-settings'));
+                settings.html("");
+            }
+        },
+        controller : function ( $scope) {
+            var vm = $scope;
             vm.params = {
                 gain : 0.7
             };
+            console.log(vm);
+
             // Initialize device object for data binding
-            var o = devicesService.add($element.attr('data-id'),vm);
-            vm.device = o;
+            if ( vm.type == "" ) {
+                vm.device = devicesService.add(vm.identification,vm);
+                vm.device.instrument_instance = InstrumentsService.getInstrument(vm.instrument_name, vm.device);
+            } else {
+                vm.device = devicesService.get(vm.identification);
+                vm.device.instrument_instance = vm.device.instrument_instance;
+            }
 
-
-            vm.device.enabled = $element.attr('data-enabled');
+            vm.device.enabled = vm.enabled;
 
             //vm.device.instrument_instance = instrumentsService.load('simpleSynth', audioCtx, masterGain, vm.device);
             vm.volumeSlider = sliderHelper.getSlider(vm.device);
-            vm.device.instrument_instance = InstrumentsService.getInstrument($element.attr('data-instrument'), vm.device);
+
             // Assign default device name
             vm.device.name = vm.device._id;
             vm.device.gainNode.connect(masterGain);
@@ -188,6 +209,15 @@ directive('toggleDeviceState', ['$compile', function($compile){
             vm.changeName = function () {
                 vm.nameChange = !vm.nameChange;
             };
+
+            vm.openSettings = function(){
+                var settings = angular.element(document.querySelector('div#instrument-settings'));
+                console.log(vm.device._id);
+                settings.html("");
+                var el = $compile('<div device="settings" identification="'+ vm.device._id + '">')(vm);
+                settings.append(el);
+            };
+
             // Toggle device state. Enable/Disable
 
             vm.toggleEnabled = function (nonDirective) {
@@ -212,11 +242,15 @@ directive('toggleDeviceState', ['$compile', function($compile){
                 }
             };
 
-            var instance = vm.device;
+            var instance = vm.device._id;
             function randomNumber(min, max, incl) {
                 incl = (incl) ? 1 : 0;
                 return Math.floor(Math.random() * ( max - min + incl )) + min;
             }
+            vm.changeNote = function (){
+                vm.device.notes[0].start = "0.0.1";
+            };
+
             if ( vm.device.name ==  "sine synth") {
                 vm.device.notes = [
                     { // 1/8 G , 1st bar beginning , 1st quarter note beginning
@@ -322,98 +356,98 @@ directive('toggleDeviceState', ['$compile', function($compile){
                     { // 1/8 G , 1st bar beginning , 1st quarter note beginning
                         target  : instance,
                         start   : "0.0.0",
-                        end     : "0.1.0",
+                        end     : "0.0.1",
                         note    : "G4",
                         velocity: 1  // Velocity indicated note volume
                     },
                     {// 1/8 G
                         target  : instance,
-                        start   : "0.2.0",
-                        end     : "0.3.0",
+                        start   : "0.0.1",
+                        end     : "0.1.0",
                         note    : "G4",
                         velocity: 1
                     },
                     {// 1/8 E    2nd quarter note. 1/8+1/8 = 1/4
                         target  : instance,
-                        start   : "0.0.1",
+                        start   : "0.1.0",
                         end     : "0.1.1",
                         note    : "E4",
                         velocity: 1
                     },
                     {// 1/8 C
                         target  : instance,
-                        start   : "0.2.1",
-                        end     : "0.3.1",
+                        start   : "0.1.1",
+                        end     : "0.2.0",
                         note    : "C4",
                         velocity: 1
                     },
                     {// 1/8 G
                         target  : instance,
-                        start   : "0.0.2",
-                        end     : "0.1.2",
+                        start   : "0.2.0",
+                        end     : "0.2.1",
                         note    : "G4",
                         velocity: 1
                     },
                     {// 1/8 G
                         target  : instance,
-                        start   : "0.2.2",
-                        end     : "0.3.2",
+                        start   : "0.2.1",
+                        end     : "0.3.0",
                         note    : "G4",
                         velocity: 1
                     },
                     {// 1/8 E
                         target  : instance,
-                        start   : "0.0.3",
-                        end     : "0.1.3",
+                        start   : "0.3.0",
+                        end     : "0.3.1",
                         note    : "E4",
                         velocity: 1
                     },
                     {// 1/8 C
                         target  : instance,
-                        start   : "0.2.3",
-                        end     : "0.3.3",
+                        start   : "0.3.1",
+                        end     : "1.0.0",
                         note    : "C4",
                         velocity: 1
                     },
                     {// 1/8 F   2nd bar beginning
                         target  : instance,
                         start   : "1.0.0",
-                        end     : "1.1.0",
+                        end     : "1.0.1",
                         note    : "F4",
                         velocity: 1
                     },
                     {// 1/8 A
                         target  : instance,
-                        start   : "1.2.0",
-                        end     : "1.3.0",
+                        start   : "1.0.1",
+                        end     : "1.1.0",
                         note    : "A4",
                         velocity: 1
                     },
                     {// 1/8 C
                         target  : instance,
-                        start   : "1.0.1",
+                        start   : "1.1.0",
                         end     : "1.1.1",
                         note    : "C5",
                         velocity: 1
                     },
                     {// 1/8 A
                         target  : instance,
-                        start   : "1.2.1",
-                        end     : "1.3.1",
+                        start   : "1.1.1",
+                        end     : "1.2.0",
                         note    : "A4",
                         velocity: 1
                     },
                     {// 1/4 G
                         target  : instance,
-                        start   : "1.0.2",
-                        end     : "1.3.2",
+                        start   : "1.2.0",
+                        end     : "1.3.0",
                         note    : "G4",
                         velocity: 1
                     },
                     {// 1/4 G
                         target  : instance,
-                        start   : "1.0.3",
-                        end     : "1.3.3",
+                        start   : "1.3.0",
+                        end     : "2.0.0",
                         note    : "G4",
                         velocity: 1
                     }];
@@ -422,43 +456,18 @@ directive('toggleDeviceState', ['$compile', function($compile){
 
             this.scope = vm;
         },
-        templateUrl : 'app/components/device/view.html'
+        templateUrl : function (e, a){
+                if ( a.device == "" ) {
+                    return 'app/components/device/view.html';
+                } else {
+                    return'app/components/device/device-settings.html'
+                }
+            }
         }
 }).
 service('devicesService',['utilitiesService','keyboardHelperService','audioCtx', function(utilitiesService, keyboardHelperService, audioCtx) {
     this.list = [];
-    var notes = [
-        {
-            start   : "0.0.0",
-            end     : "0.0.1",
-            note    : "G5",
-            velocity: 1
-        },
-        {
-            start   : "0.0.1",
-            end     : "0.0.2",
-            note    : "G3",
-            velocity: 1
-        },
-        {
-            start   : "0.0.2",
-            end     : "0.0.3",
-            note    : "E3",
-            velocity: 1
-        },
-        {
-            start   : "0.0.3",
-            end     : "0.0.4",
-            note    : "C5",
-            velocity: 1
-        },
-        //{
-        //    start   : "5.2.2",
-        //    end     : "6.1.4",
-        //    note    : "C3",
-        //    velocity: 1
-        //}
-    ];
+
 
 
     function randomNumber(min, max, incl) {
@@ -466,18 +475,18 @@ service('devicesService',['utilitiesService','keyboardHelperService','audioCtx',
         return Math.floor(Math.random() * ( max - min + incl )) + min;
     }
 
-    var genNotes = function ( device ) {
+    var genNotes = function ( id ) {
         var i;
         var notes = [];
         var letters = ["C","D","E","F","G","A","B"];
-        for ( i = 0; i < 100 ; i++) {
+        for ( i = 0; i < 1000 ; i++) {
             var bar = randomNumber(0,50, true);
             var qt = randomNumber(0,3, true);
             var eighth = randomNumber(0,3, true);
             var start = bar + "." + qt + "." + eighth;
             var end = randomNumber(bar,bar + randomNumber(0,1), true) + "." + randomNumber(qt,3, true) + "." + randomNumber(eighth,3, true);
             notes.push({
-                target  : device,
+                target  : id,
                 start   : start,
                 end     : end,
                 note    : letters[randomNumber(0,6, true)] + randomNumber(3, 7),
@@ -495,7 +504,7 @@ service('devicesService',['utilitiesService','keyboardHelperService','audioCtx',
             instrument_instance : null,
             enabled : true,
             note_input : (this.list.length == 0),
-            notes :null,
+            notes :genNotes(id),
             gainNode : audioCtx.createGain(),
             effects_chain : null,
         };
@@ -525,7 +534,7 @@ service('devicesService',['utilitiesService','keyboardHelperService','audioCtx',
         var i ;
         var allDevices = this.getAll();
         for ( i = 0 ; i < allDevices.length ; i++) {
-            if ( id === allDevices[i].id ) {
+            if ( id === allDevices[i]._id ) {
                 return allDevices[i];
             }
         }

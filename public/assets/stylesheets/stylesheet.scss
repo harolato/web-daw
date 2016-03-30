@@ -1,18 +1,15 @@
-.keyboard {
-  .key {
-    display: inline-block;
-    position: relative;
-    width: 50px;
-    height: 150px;
-    border: 1px solid white;
-    cursor: pointer;
-  }
-  .black {
-    background-color: #000;
-  }
-  .white {
-    background-color: #ccc;
-  }
+@import url(https://fonts.googleapis.com/css?family=Roboto+Slab:100,400,700);
+@import url(https://fonts.googleapis.com/css?family=Raleway:400,800);
+
+@font-face {
+  src: url('../fonts/Aller_Std_Rg.ttf');
+  font-family: 'Aller Regular';
+}
+
+body {
+  margin:0;
+  padding:0;
+  background-color: #d6d6d6;
 }
 filter {
   padding:5px;
@@ -27,31 +24,77 @@ master-gain {
   background-color: rgba(0,150,150,0.3);
 }
 
-#top-bar {
-  background-color: salmon;
-}
 
-.device-block {
-  margin-bottom: 25px;
-  margin-top: 25px;
+
   .device {
+    border-bottom:1px solid #b3e2d9;
+    color: #fff;
+    position: relative;
+    .device-name {
+      font-family:'Aller Regular';
+      text-align: center;
+      margin-top:10px;
+    }
+    .settings-icon {
+      cursor: pointer;
+      position: absolute;
+      top:10px;
+      right:10px;
+      color: #fff;
+      &:hover {
+        color: #107161;
+      }
+    }
+    .toggle-device-state, .toggle-keyboard-input {
+      font-family:"Roboto Slab";
+      span {
+        font-size: 1.8em;
+        position: relative;
+        top:3px;
+      }
+    }
+    .toggle-keyboard-input span.fa-circle {
+      color: #d53e7a;
+    }
+    .toggle-keyboard-input span.fa-circle-o {
+      color: #003b4a;
+    }
+    .toggle-device-state span.fa-toggle-off {
+      color: #003b4a;
+    }
     &.device-disabled {
-      background-color: #2aabd2;
+      background-color: #209884;
     }
-    background-color: #def1ff;
+    background-color: #00b2a3;
     .note-preview {
-      background-color: #9acfea;
-      height: 100px;
+      background-image: url('../images/notesheet-grid.png');
+      box-shadow: inset 0 0 0 1000px rgba(0,0,0,.4);
+      background-repeat: repeat;
+      height: 135px;
+      .note-wrapper {
+        position: relative;
+        .note {
+          position:absolute;
+          background: #003b4a;
+          -webkit-border-radius:5px;
+          -moz-border-radius:5px;
+          border-radius:5px;
+          width: 50px;
+          height:15px;
+        }
+      }
     }
-  }
 
 
 }
 .slider-outter {
+  margin-top: 5px;
+  margin-bottom: 5px;
   .slider  {
     width:100%;
     height:25px;
-    background-color: #1b6d85;
+    border: 1px solid #008b86;
+    background-color: #b3e2d9;
     -webkit-border-radius:5px;
     -moz-border-radius:5px;
     border-radius:5px;
@@ -59,7 +102,440 @@ master-gain {
     position: relative;
     .value-bar {
       height: inherit;
-      background-color: #2aabd2;
+      background-color: #008f83;
+      padding:2px 0px 0px 15px;
+      font-family: "Aller Regular";
     }
   }
+}
+
+.inl {
+  display:inline-block;
+}
+
+input{
+  background-color:#b3e2d9;
+  outline:none;
+  border: none;
+  -webkit-border-radius:5px;
+  -moz-border-radius:5px;
+  border-radius:5px;
+  padding: 5px;
+  color: #003b4a;
+  font-family:"Roboto Slab";
+}
+
+::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+  color:    rgba(0,59,74,0.5);
+}
+:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+  color:    rgba(0,59,74,0.5);
+  opacity:  1;
+}
+::-moz-placeholder { /* Mozilla Firefox 19+ */
+  color:    rgba(0,59,74,0.5);
+  opacity:  1;
+}
+:-ms-input-placeholder { /* Internet Explorer 10-11 */
+  color:    rgba(0,59,74,0.5);
+}
+
+#top-bar {
+  height: 70px;
+  background-image: url('../images/top-bar-background.png');
+  background-color: #00b2a3;
+  margin-bottom: 15px;
+  background-repeat:no-repeat;
+  h1 {
+    font-family:Raleway;
+    font-weight:800;
+    color: #fff;
+    position: relative;
+    bottom:7px;
+  }
+  .new-project {
+    position: relative;
+    top:14px;
+    .plus-button {
+      background-color: #fff;
+      border-radius: 100%;
+      width: 35px;
+      height:35px;
+      margin-right:10px;
+      cursor: pointer;
+      span {
+        font-size: 2em;
+        position:relative;
+        top:6px;
+        left: 7px;
+        color: #003b4a;
+      }
+    }
+    .action-buttons {
+      span {
+        cursor: pointer;
+        color: #003b4a;
+        margin-left: 5px;
+        margin-right: 5px;
+      }
+    }
+  }
+  .play-button {
+    width: 50px;
+    height: 50px;
+    background: #0c908b;
+    -webkit-border-radius:100%;
+    -moz-border-radius:100%;
+    border-radius:100%;
+    position: relative;
+    top: 9px;
+    cursor: pointer;
+    span {
+      position:relative;
+      top:9px;
+      left:-5px;
+      font-size:2.5em;
+      color: #fff;
+    }
+
+  }
+  .bpm {
+    position: relative;
+    top:20px;
+  }
+}
+#current-time-box, #scale-timeline-box {
+  background: #0c908b;
+  display:inline-block;
+  padding:5px;
+  -webkit-border-radius:5px;
+  -moz-border-radius:5px;
+  border-radius:5px;
+  color: #fff;
+}
+.devices-container {
+  margin-top: 25px;
+  padding-top: 15px;
+  overflow: hidden;
+  .timescale {
+    background-image: url('../images/timeline-segment.png');
+    background-repeat: repeat-x;
+    height: 12px;
+    position: relative;
+    .time-seeker {
+      position: absolute;
+      height:1000px;
+      width:1px;
+      background: #fff;
+      top:0px;
+      left:200px;
+      z-index: 999;
+    }
+    span {
+      display: inline-block;
+      position: relative;
+      bottom:18px;
+      left: -18px;
+      margin-right:57px;
+    }
+    &:last-child {
+      margin-right:0;
+    }
+  }
+
+}
+.add-new-device-container {
+  margin-top:100px;
+  .add-new-device {
+    width:400px;
+    height:130px;
+    background-color: #3bc2b5;
+    .big-plus-button {
+      width:165px;
+      height:130px;
+      display: inline-block;
+      background-image: url('../images/button-bg.png');
+      background-repeat: no-repeat;
+      background-position: center;
+      background-color: #0c908b;
+      &::after {
+        content: '\f067 ';
+        font-family: FontAwesome;
+        position: absolute;
+        font-size: 6.5em;
+        top: 8px;
+        left: 62px;
+        color: #fff;
+      }
+    }
+    .instrument-list {
+      display: inline-block;
+      overflow: auto;
+      height:inherit;
+      width: 231px;
+      &::-webkit-scrollbar {
+        width: 12px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background-color: #00b2a3;
+        -webkit-border-radius:2px;
+        -moz-border-radius:2px;
+        border-radius:2px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background-color: #244c5a;
+        -webkit-border-radius:2px;
+        -moz-border-radius:2px;
+        border-radius:2px;
+        background-image: url('../images/scrollbaricon-v.png');
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 8px 8px;
+      }
+      ul {
+        height: inherit;
+        list-style-type: none;
+        padding-top: 5px;
+        padding-left: 25px;
+        margin: 0;
+        li {
+          cursor: pointer;
+          font-family: "Roboto Slab";
+          font-weight: bold;
+          &:hover {
+            color: #e8404c;
+          }
+        }
+      }
+    }
+  }
+}
+#instrument-settings {
+  background: #003b4a;
+  color: #fff;
+  position: fixed;
+  left: 50%;
+  transform: translate(-50%, 0);
+  bottom:0px;
+  z-index:1000;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+  .settings-keyboard {
+    position: relative;
+    width: 99.2%;
+    height:100px;
+    margin:0px auto;
+    overflow: hidden;
+    .keyboard {
+      position: absolute;
+      bottom:0px;
+      left:0px;
+      width: 200%;
+      height: inherit;
+      ul{
+        margin:0;
+        padding:0;
+      }
+      .key {
+        display: inline-block;
+        position: relative;
+        width: 40px;
+        height: 100px;
+        border-right: 1px solid #008f83;
+        cursor: pointer;
+        span {
+          color: #000;
+          position: absolute;
+          bottom:10px;
+          left:5px;
+          font-family: Raleway;
+          font-weight: 100;
+        }
+      }
+      .black {
+        background-color: #000;
+      }
+      .white {
+        background-color: #fff;
+      }
+    }
+  }
+
+    .instrument-control-wrapper {
+      select {
+        border: none;
+        -webkit-border-radius: 5px;
+        -moz-border-radius: 5px;
+        border-radius: 5px;
+        background-color: #b3e2d9;
+
+        padding: 4px;
+        color: #003b4a;
+        font-family: "Roboto Slab";
+        overflow: hidden;
+      }
+      .instrument-control-outer-wrapper {
+        overflow-x: auto;
+        overflow-y: hidden;
+        white-space:nowrap;
+        width: 100%;
+        margin-bottom:20px;
+        &::-webkit-scrollbar {
+          width: 10px;
+        }
+
+        &::-webkit-scrollbar-track {
+          background-color: #00b2a3;
+          -webkit-border-radius:5px;
+          -moz-border-radius:5px;
+          border-radius:5px;
+        }
+
+
+        &::-webkit-scrollbar-thumb {
+          background-color: #244c5a;
+          -webkit-border-radius:5px;
+          -moz-border-radius:5px;
+          border-radius:5px;
+          background-image: url('../images/scrollbaricon.png');
+          background-repeat: no-repeat;
+          background-position: center;
+          background-size: auto 12px;
+        }
+      }
+      .stack-vertically {
+        display: block;
+      }
+      .stack-horizontally {
+        display: inline-block;
+        margin-right: 30px;
+        position: relative;
+      }
+      .add-effect {
+        width: 250px;
+        height: 75px;
+        position: relative;
+        bottom: 45px;
+        .effect-list {
+          display: inline-block;
+          width: 150px;
+          height: inherit;
+          background-color: #00a99c;
+          position: relative;
+          right: 4px;
+          overflow: auto;
+          &::-webkit-scrollbar {
+            width: 10px;
+          }
+
+          &::-webkit-scrollbar-track {
+            background-color: #00b2a3;
+            -webkit-border-radius:2px;
+            -moz-border-radius:2px;
+            border-radius:2px;
+          }
+          &::-webkit-scrollbar-thumb {
+            background-color: #244c5a;
+            -webkit-border-radius:2px;
+            -moz-border-radius:2px;
+            border-radius:2px;
+            background-image: url('../images/scrollbaricon-v.png');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 8px 8px;
+          }
+          ul {
+            height: inherit;
+            list-style-type: none;
+            padding-top: 5px;
+            padding-left: 25px;
+            margin: 0;
+            li {
+              cursor: pointer;
+              font-family: "Roboto Slab";
+              font-weight: bold;
+              &:hover {
+                color: #e8404c;
+              }
+            }
+          }
+        }
+        .big-plus-icon {
+          width: 95px;
+          height: inherit;
+          background: #097879;
+          position: relative;
+          cursor: pointer;
+          display: inline-block;
+          &:hover {
+            background-color: #25787b;
+          }
+          &::after {
+            content: '\f067 ';
+            font-family: FontAwesome;
+            position: absolute;
+            font-size: 3.5em;
+            top: 4px;
+            left: 29px;
+          }
+        }
+
+      }
+      .control-block {
+        margin-bottom: 25px;
+        width: 200px;
+        .label {
+          display: block;
+          font-size: 1em;
+          text-align: center;
+          margin-bottom: 10px;
+        }
+      }
+    }
+
+    .close-button {
+      position: absolute;
+      top:4px;
+      right:10px;
+      cursor: pointer;
+      &:before {
+        content: '\f0ab';
+        font-family: FontAwesome;
+        color: #d53e7a;
+        font-size: 1.5em;
+      }
+      z-index:10;
+    }
+    .top-line {
+      position: relative;
+      margin-top: 15px;
+      margin-left:25px;
+      margin-bottom:30px;
+      & *{
+        display: inline-block;
+      }
+      .device-name-bar {
+        .device-name {
+          font-family: "Aller Regular";
+          font-size: 1.6em;
+        }
+      }
+      input {
+        margin-left:5px;
+        margin-right:5px;
+      }
+      select {
+        background: #003b4a;
+        outline: none;
+        border: none;
+      }
+      .midi-control-bar {
+        margin-left:20px;
+        font-family:Raleway;
+        font-size: 1.2em;
+
+      }
+    }
+
 }

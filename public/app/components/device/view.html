@@ -1,24 +1,24 @@
 
-
-<!--<button add-component="synth" type="button" ng-click="createNew()">Add new synth</button>-->
-<!--<button ng-click="cons()">Debug me, pls!!!</button>-->
-<!--<button ng-click="toggleNoteInput()">Keyboard In:</button>-->
-<!--<input type="checkbox" ng-model="device.note_input">-->
-<!--<input type="text" ng-model="params.gain">-->
-<!--<input type="range" title="{{params.gain}}" min="0" max="1" step=".001" ng-change="changeVolume()" ng-model="params.gain" style="-webkit-appearance: slider-vertical">-->
-<div class="row">
     <div class="device-params col-sm-3">
+        <span class="fa fa-wrench settings-icon" ng-click="openSettings()"></span>
         <div class="device-name">
-            <span ng-hide="!nameChange" ng-dblclick="this.changeName()">{{device.name}}</span>
-            <input class="device-name-change" type="text" ng-model="device.name" ng-hide="nameChange"/><span ng-hide="nameChange" ng-click="this.changeName()">Close</span>
+            <span>{{device.name}}</span>
         </div>
         <div class="toggle-device-state" toggle-device-state></div>
-        <!--<input type="checkbox" ng-click="toggleNoteInput(true)" ng-model="device.note_input">-->
         <div class="toggle-keyboard-input" toggle-keyboard-input></div>
         <div slider class="slider-outter" ng-model="params.gain" min="0" max="1"></div>
-        <div ng-click="">Open note editor</div>
+        <!--<div ng-click="this.changeNote()">Change note</div>-->
+        <!--<button ng-click="openSettings()">settings</button>-->
     </div>
-    <div class="note-preview col-sm-9" notes-preview>
 
+    <div class="note-preview col-sm-9" notes-preview>
+        <div class="note-wrapper">
+            <div class="note" style="top:10px;left:10px;"></div>
+            <div class="note" style="top:10px;left: 160px;"></div>
+            <div class="note" style="top:10px;left: 430px;"></div>
+            <div class="note" style="top: 80px;left: 300px; width:100px;"></div>
+            <div class="note" style="top: 90px;left: 225px;"></div>
+            <div class="note" style="top: 53px;left: 21px;"></div>
+        </div>
     </div>
-</div>
+    
