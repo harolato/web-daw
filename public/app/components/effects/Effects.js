@@ -7,7 +7,7 @@ Effects module
 desc    : responsible for creating new instances of effect classes
           Effect routing etc.
  */
-angular.module('Effects', ['filterEffect', 'delayEffect', 'visualizationEffect', 'reverbEffect']).
+angular.module('Effects', ['filterEffect', 'visualizationEffect', 'reverbEffect']).
     /*
 factory : effectsService
 desc    : Contains functionality to load an effect, performs effect audio routing

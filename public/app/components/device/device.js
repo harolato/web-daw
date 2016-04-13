@@ -3,6 +3,7 @@
  */
 // Initialize Devices module
 // Load instruments module
+// --
 angular.module('Devices', ['Instruments']).
     /*
     directive   : notesPreview

@@ -17,7 +17,8 @@ factory('visualization',['audioCtx','$timeout','$rootScope',function(audioCtx, $
                 input       : null,
                 output      : localOutputGainNode
             };
-
+            console.log("sdfsdfs");
+            console.log("asdsd");
             var analyser = audioCtx.createAnalyser();
 
             analyser.fftSize = 2048;
@@ -32,11 +33,11 @@ factory('visualization',['audioCtx','$timeout','$rootScope',function(audioCtx, $
 
                 analyser.getByteTimeDomainData(data);
 
-                canvasCtx.fillStyle = 'rgb(200, 200, 200)';
+                canvasCtx.fillStyle = 'rgb(0, 53, 67)';
                 canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
 
                 canvasCtx.lineWidth = 2;
-                canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
+                canvasCtx.strokeStyle = 'rgb(255, 255, 255)';
 
                 canvasCtx.beginPath();
 

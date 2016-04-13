@@ -76,6 +76,7 @@ controller('mainController',['$scope', function($scope){
  */
 // Initialize Devices module
 // Load instruments module
+// --
 angular.module('Devices', ['Instruments']).
     /*
     directive   : notesPreview
@@ -747,7 +748,7 @@ Effects module
 desc    : responsible for creating new instances of effect classes
           Effect routing etc.
  */
-angular.module('Effects', ['filterEffect', 'delayEffect', 'visualizationEffect', 'reverbEffect']).
+angular.module('Effects', ['filterEffect', 'visualizationEffect', 'reverbEffect']).
     /*
 factory : effectsService
 desc    : Contains functionality to load an effect, performs effect audio routing
@@ -1643,81 +1644,6 @@ controller('sequencerController', [function(){
 
     }
 }]);
-angular.module('delayEffect', []).
-factory('delay',['audioCtx','$timeout',function(audioCtx, $timeout){
-    var localInputGainNode = audioCtx.createGain();
-    var localOutputGainNode = audioCtx.createGain();
-    var params = {
-        filterGain  : 0,
-        filterTypes : [
-            'lowpass',
-            'highpass',
-            'bandpass',
-            'lowshelf',
-            'highshelf',
-            'peaking',
-            'notch',
-            'allpass'
-        ],
-        filterType  : 'lowpass',
-        input       : null,
-        output      : localOutputGainNode,
-        qVal        : 0,
-        freq        : 0,
-        maxFreq     : audioCtx.sampleRate/2,
-        enabled     : true
-    };
-
-    var updater = null;
-    var filter = audioCtx.createDelay(5.0);
-
-    var update = function () {
-
-        filter.gain.value = params.filterGain;
-        filter.frequency.value = params.freq;
-        filter.Q.value = params.qVal;
-        filter.type = params.filterType;
-        //console.log(params);
-        updater = $timeout(update,200);
-    };
-
-    localInputGainNode.connect(filter);
-    filter.connect(localOutputGainNode);
-
-    return {
-        set filterType(a) {
-            params.filterType = a;
-            filter.type = params.filterType;
-        },
-        get params() {
-            return params;
-        },
-        /*
-         gain value in decibels.
-         Range:    [-40, 40]
-         */
-        set volume (a) {
-            params.gain = a;
-            filter.gain.value = params.gain;
-        },
-        set input (a) {
-            params.input = a;
-            params.input.connect(localInputGainNode);
-
-        },
-        set output (a) {
-            params.output.connect(a);
-        },
-        disconnect : function () {
-            params.input = null;
-            params.output = null;
-            filter.disconnect();
-        },
-        init : function (){
-            update();
-        }
-    };
-}]);
 angular.module('filterEffect', []).
 factory('filter',['audioCtx','$timeout',function(audioCtx, $timeout){
     var Filter = (function (){
@@ -1835,10 +1761,18 @@ factory('reverb',['audioCtx','$timeout', '$http',function(audioCtx, $timeout, $h
                 // List of impulses
                 impulses: [
                     {
+                        /**
+                         * Resource :
+                         * http://www.openairlib.net/auralizationdb/content/st-andrews-church
+                         */
                         name: "St Andrew's Church",
                         file: 'lyd3_000_ortf_48k.wav'
                     },
                     {
+                        /**
+                         * Resource :
+                         * http://www.openairlib.net/auralizationdb/content/underground-car-park
+                         */
                         name: "Underground Car Park",
                         file: "carpark_balloon_ir_stereo_24bit_44100.wav",
                     }
@@ -1953,7 +1887,11 @@ factory('reverb',['audioCtx','$timeout', '$http',function(audioCtx, $timeout, $h
 }]);
 
 /**
- * Created by 12059_000 on 4/10/2016.
+ * Created by Haroldas Latonas on 4/10/2016.
+ */
+/**
+ * Resources used to implement functionality for this effect:
+ *      https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Visualizations_with_Web_Audio_API
  */
 angular.module('visualizationEffect', []).
 factory('visualization',['audioCtx','$timeout','$rootScope',function(audioCtx, $timeout, $rootScope){
@@ -1967,7 +1905,8 @@ factory('visualization',['audioCtx','$timeout','$rootScope',function(audioCtx, $
                 input       : null,
                 output      : localOutputGainNode
             };
-
+            console.log("sdfsdfs");
+            console.log("asdsd");
             var analyser = audioCtx.createAnalyser();
 
             analyser.fftSize = 2048;
@@ -1982,11 +1921,11 @@ factory('visualization',['audioCtx','$timeout','$rootScope',function(audioCtx, $
 
                 analyser.getByteTimeDomainData(data);
 
-                canvasCtx.fillStyle = 'rgb(200, 200, 200)';
+                canvasCtx.fillStyle = 'rgb(0, 53, 67)';
                 canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
 
                 canvasCtx.lineWidth = 2;
-                canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
+                canvasCtx.strokeStyle = 'rgb(255, 255, 255)';
 
                 canvasCtx.beginPath();
 
@@ -2045,13 +1984,13 @@ factory('visualization',['audioCtx','$timeout','$rootScope',function(audioCtx, $
                         HEIGHT = canvas.height;
                         canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
                         draw();
-                    },1000);
+                    },2000);
                 }
             };
         }
         return visualization;
     })();
-return Visualization;
+    return Visualization;
 }]);
 /**
  * Created by 12059_000 on 12/9/2015.
@@ -2372,7 +2311,7 @@ angular.module('simpleSynth', [])
                 set volume (a) {
                     params.gain = a;
                     params.output.gain.value = params.gain;
-                    console.log(a);
+                    //console.log(a);
                 },
                 get volume () {
                     return params.gain;
