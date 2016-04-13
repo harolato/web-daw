@@ -95,7 +95,7 @@ factory('visualization',['audioCtx','$timeout','$rootScope',function(audioCtx, $
                         HEIGHT = canvas.height;
                         canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
                         draw();
-                    },1000);
+                    },2000);
                 }
             };
         }

@@ -140,7 +140,7 @@ angular.module('simpleSynth', [])
                 set volume (a) {
                     params.gain = a;
                     params.output.gain.value = params.gain;
-                    console.log(a);
+                    //console.log(a);
                 },
                 get volume () {
                     return params.gain;
