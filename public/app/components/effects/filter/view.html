@@ -1,0 +1,12 @@
+<div class="control-block stack-vertically">
+    <span class="label">Filter type</span>
+    <select ng-model="effect.params.filterType" ng-options="t for t in effect.params.filterTypes"></select>
+    <input type="checkbox" ng-model="effect.params.enabled">
+    <input type="range" step="0.1" min="-40" max="40" ng-model="effect.params.filterGain">
+    <input type="range" step="0.1" min="10" max="{{effect.params.maxFreq}}" ng-model="effect.params.freq">
+    <input type="range" step="0.0001" min="0.0001" max="1000" ng-model="effect.params.qVal">
+    <!--<input type="text" title="freq" ng-model="effect.params.freq">-->
+    <!--<input type="text" title="q" ng-model="effect.params.qVal">-->
+    <!--<input type="text" title="gain" ng-model="effect.params.gain">-->
+
+</div>

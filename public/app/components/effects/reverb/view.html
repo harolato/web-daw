@@ -1,10 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-
-</body>
-</html>
+<div class="control-block stack-vertically">
+    <span class="label">Reverb</span>
+    <div class="label label-info">
+        Impulses used can be found in: <br/><a href="http://openairlib.net">www.openairlib.net</a>
+    </div>
+    <span class="label">Choose impulse: </span>
+    <select ng-model="effect.impulse" ng-options="i.name for i in effect.params.impulses">
+    </select>
+    <span class="label">Dry/Wet</span>
+    <input type="range" min="0" max="1" step="0.1" ng-model="effect.drywet">
+</div>

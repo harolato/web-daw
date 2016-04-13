@@ -1,57 +1,32 @@
 <div class="stack-horizontally">
     <div class="control-block stack-vertically">
-        <span class="label">Wave form</span>
-        <select ng-model="instrument.type">
-            <option value="sine">Sine</option>
-            <option value="square">Square</option>
-            <option value="triangle">Triangle</option>
-        </select>
-    </div>
-    <div class="control-block stack-vertically">
         <span class="label">Gain(Volume)</span>
-        <div slider class="slider-outter" ng-model="instrument.params.gain" min="0" max="1"></div>
+        <div slider class="slider-outter" ng-model="instrument.volume" min="0" max="1"></div>
+        <input type="range" step=".1" min="0" max="1" ng-model="instrument.volume">
     </div>
 </div>
 <div class="stack-horizontally">
     <div class="control-block stack-vertically">
-        <span class="label">Wave form</span>
-        <select ng-model="instrument.type">
-            <option value="sine">Sine</option>
-            <option value="square">Square</option>
-            <option value="triangle">Triangle</option>
-        </select>
-    </div>
-    <div class="control-block stack-vertically">
-        <span class="label">Gain(Volume)</span>
-        <div slider class="slider-outter" ng-model="instrument.params.gain" min="0" max="1"></div>
+        <span class="label">Osc 1 waveform</span>
+        <select ng-model="instrument.params.osc1.synthType" ng-options="t for t in instrument.params.synthTypes"></select>
+        <input type="checkbox" ng-model="instrument.params.osc1.enabled">
+        <span class="label">Octave</span>
+        <input type="range" step="1" min="-4" max="4" ng-model="instrument.params.osc1.octave">
+        <input type="text" ng-model="instrument.params.osc1.octave">
+        <span class="label">Pan</span>
+        <input type="range" step="0.01" min="-1" max="1" ng-model="instrument.osc1Pan">
     </div>
 </div>
 <div class="stack-horizontally">
     <div class="control-block stack-vertically">
-        <span class="label">Wave form</span>
-        <select ng-model="instrument.type">
-            <option value="sine">Sine</option>
-            <option value="square">Square</option>
-            <option value="triangle">Triangle</option>
-        </select>
-    </div>
-    <div class="control-block stack-vertically">
-        <span class="label">Gain(Volume)</span>
-        <div slider class="slider-outter" ng-model="instrument.params.gain" min="0" max="1"></div>
-    </div>
-</div>
-<div class="stack-horizontally">
-    <div class="control-block stack-vertically">
-        <span class="label">Wave form</span>
-        <select ng-model="instrument.type">
-            <option value="sine">Sine</option>
-            <option value="square">Square</option>
-            <option value="triangle">Triangle</option>
-        </select>
-    </div>
-    <div class="control-block stack-vertically">
-        <span class="label">Gain(Volume)</span>
-        <div slider class="slider-outter" ng-model="instrument.params.gain" min="0" max="1"></div>
+        <span class="label">Osc 2 waveform</span>
+        <select ng-model="instrument.params.osc2.synthType" ng-options="t for t in instrument.params.synthTypes"></select>
+        <input type="checkbox" ng-model="instrument.params.osc2.enabled">
+        <span class="label">Octave</span>
+        <input type="range" step="1" min="-4" max="4" ng-model="instrument.params.osc2.octave">
+        <input type="text" ng-model="instrument.params.osc2.octave">
+        <span class="label">Pan</span>
+        <input type="range" step="0.01" min="-1" max="1" ng-model="instrument.osc2Pan">
     </div>
 </div>
 <div class="stack-horizontally add-effect" add-effect></div>

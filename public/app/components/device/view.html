@@ -1,5 +1,6 @@
 
-    <div class="device-params col-sm-3">
+    <div class="device-params col-sm-3" ng-class="getDeviceClass()">
+        <span class="fa-trash fa delete-device-icon" ng-click="removeDevice()"></span>
         <span class="fa fa-wrench settings-icon" ng-click="openSettings()"></span>
         <div class="device-name">
             <span>{{device.name}}</span>

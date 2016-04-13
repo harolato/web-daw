@@ -1,10 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-
-</body>
-</html>
+<div class="row">
+    <div class="col-sm-4">
+        <div class="add-new-device">
+            <div class="big-plus-button"></div>
+            <div class="instrument-list">
+                <ul>
+                    <li ng-click="addDevice(i)" ng-repeat="i in instruments">{{i.name}}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

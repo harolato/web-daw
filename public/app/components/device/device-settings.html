@@ -1,30 +1,24 @@
 <div ng-click="closeSettings()" class="close-button"></div>
 <div class="top-line">
     <div class="device-name-bar">
+
         <span class="device-name">
+
             <span ng-hide="!nameChange" ng-dblclick="this.changeName()">{{device.name}}</span>
             <input class="device-name-change" size="8" type="text" ng-model="device.name" ng-hide="nameChange"/>
             <span ng-hide="nameChange" ng-click="this.changeName()" class="fa fa-close" style="cursor:pointer;"></span>
         </span>
-        <select>
-            <option value="" disabled="disabled">{{device.instrument_instance.name}}</option>
-        </select>
     </div>
     <div class="midi-control-bar">
         <span>MIDI Control</span>
-        <input type="checkbox">
-        <div ng-controller="midiHandlerController">
-            <select ng-model="activeDevice" ng-options="device.midi.name + ' - ' + device.user.name for device in devices">
-                <option value="" disabled="disabled">Choose midi device</option>
-            </select>
-        </div>
+        <div choose-midi-device></div>
     </div>
 </div>
 <div instrument-control class="instrument-control-wrapper"></div>
 
 <div style="clear: both;"></div>
 <div class="row">
-<div class="settings-keyboard">
+    <div class="settings-keyboard">
         <keyboard octave="3" octaves="3" class="keyboard"></keyboard>
-</div>
+    </div>
 </div>

@@ -1,3 +1,6 @@
+/**
+ * Created by Haroldas Latonas on 4/10/2016.
+ */
 angular.module('Sequencer',['Devices', 'keyboard']).
 controller('sequencerController', [function(){
     //var vm = $scope;

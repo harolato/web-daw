@@ -27,6 +27,9 @@ master-gain {
 
 
   .device {
+    .device-disabled {
+      background-color: #209884;
+    }
     border-bottom:1px solid #b3e2d9;
     color: #fff;
     position: relative;
@@ -34,6 +37,16 @@ master-gain {
       font-family:'Aller Regular';
       text-align: center;
       margin-top:10px;
+    }
+    .delete-device-icon {
+      cursor: pointer;
+      position: absolute;
+      top:10px;
+      left:10px;
+      color: #107161;
+      &:hover {
+        color: #d53e7a;
+      }
     }
     .settings-icon {
       cursor: pointer;
@@ -61,9 +74,6 @@ master-gain {
     }
     .toggle-device-state span.fa-toggle-off {
       color: #003b4a;
-    }
-    &.device-disabled {
-      background-color: #209884;
     }
     background-color: #00b2a3;
     .note-preview {
@@ -339,6 +349,7 @@ input{
         padding:0;
       }
       .key {
+
         display: inline-block;
         position: relative;
         width: 40px;
@@ -356,9 +367,15 @@ input{
       }
       .black {
         background-color: #000;
+        &.active {
+          background-color: #1a7370;
+        }
       }
       .white {
         background-color: #fff;
+        &.active {
+          background-color: #3bc2b5;
+        }
       }
     }
   }
@@ -412,6 +429,20 @@ input{
         display: inline-block;
         margin-right: 30px;
         position: relative;
+      }
+      .effect {
+        background-color : rgba(0,0,0,0.1);
+        padding : 10px;
+        -webkit-border-radius:10px;
+        -moz-border-radius:10px;
+        border-radius:10px;
+        .close {
+          color: white;
+          cursor: pointer;
+          position: absolute;
+          top:5px;
+          right:5px;
+        }
       }
       .add-effect {
         width: 250px;
@@ -485,7 +516,6 @@ input{
       }
       .control-block {
         margin-bottom: 25px;
-        width: 200px;
         .label {
           display: block;
           font-size: 1em;
@@ -539,4 +569,9 @@ input{
       }
     }
 
+}
+
+.visualizer {
+  width:500px;
+  height:250px;
 }

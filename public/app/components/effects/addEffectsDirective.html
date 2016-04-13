@@ -1,14 +1,6 @@
 <div class="big-plus-icon"></div>
 <div class="effect-list">
     <ul>
-        <li>Reverb</li>
-        <li>Delay</li>
-        <li>Something</li>
-        <li>Something</li>
-        <li>Something</li>
-        <li>Something</li>
-        <li>Something</li>
-        <li>Something</li>
-        <li>Something</li>
+        <li ng-click="addEffect(e)" ng-repeat="e in effectsList" data-id="{{e.id}}">{{e.name}}</li>
     </ul>
 </div>

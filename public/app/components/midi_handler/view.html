@@ -1,10 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-
-</body>
-</html>
+<select ng-hide="activeDevice" ng-change="connect()" ng-model="activeDevice" ng-options="device.midi.name + ' - ' + device.user.name disable when device.user != null for device in devices">
+    <option value="" disabled="disabled">Choose midi device</option>
+</select>
+<div class="label label-primary" ng-hide="!activeDevice">{{activeDevice.midi.name}} - {{activeDevice.user.name}}</div>
+<span class="fa fa-close" ng-click="disconnect()" ng-hide="!activeDevice" style="cursor:pointer;"></span>

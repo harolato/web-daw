@@ -13,6 +13,8 @@
     <link href="assets/font-awesome/css/font-awesome.min.css" rel="stylesheet">
     <!--custom-->
     <link href="assets/stylesheets/stylesheet.css" rel="stylesheet">
+    <!--Lodash lib-->
+    <script src="https://cdn.rawgit.com/lodash/lodash/3.0.1/lodash.min.js"></script>
     <!--ngular-->
     <script src="assets/angular/angular.min.js"></script>
     <script src="assets/scripts/qwerty-hancock.min.js"></script>
@@ -63,7 +65,6 @@
         </div>
     </div>
 </div>
-
 <div class="container">
     <div class="row">
         <div class="col-sm-6">
@@ -80,41 +81,23 @@
 </div>
 
 <div class="container devices-container" ng-controller="devicesController as devices">
+
     <div class="row">
         <div class="col-sm-9 col-sm-offset-3 timescale">
             <span ng-repeat="n in [1,2,3,4,5,6,7,8,9,10,11,12]">{{n}}</span>
             <div class="time-seeker"></div>
         </div>
     </div>
-    <div class="device row" device identification="squaresynth" enabled="true" ng-class="getDeviceClass()" instrument="simple_synth"></div>
 
-    <div class="device row device-disabled" device identification="sinesynth" enabled="false" ng-class="getDeviceClass()" instrument="another_synth"></div>
+    <div class="device row" device identification="squaresynth" enabled="true" instrument="simple_synth"></div>
 
-    <div class="device row" device identification="anothersquaresynth" enabled="false" ng-class="getDeviceClass()" instrument="simple_synth"></div>
+    <div class="device row" device identification="sinesynth" enabled="true" instrument="simple_synth"></div>
+
+    <div class="device row" device identification="anothersquaresynth" enabled="true" instrument="simple_synth"></div>
 
 </div>
-<div class="container add-new-device-container">
-    <div class="row">
-        <div class="col-sm-4">
-            <div class="add-new-device">
-                <div class="big-plus-button"></div>
-                <div class="instrument-list">
-                    <ul>
-                        <li>Instrument...</li>
-                        <li>Instrument...</li>
-                        <li>Instrument...</li>
-                        <li>Instrument...</li>
-                        <li>Instrument...</li>
-                        <li>Instrument...</li>
-                        <li>Instrument...</li>
-                        <li>Instrument...</li>
-                        <li>Instrument...</li>
-                        <li>Instrument...</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="container add-new-device-container" add-new-device>
+
 </div>
 <!--<master-gain></master-gain>-->
 <!--<filter></filter>-->
