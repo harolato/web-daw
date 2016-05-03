@@ -9,6 +9,10 @@ angular.module('waw', [ 'Devices', 'Instruments', 'keyboard', 'midiHandler']).
     description : It just sits there and provides $scope to child controllers
  */
 controller('mainController',['$scope', function($scope){
+    $scope.play = function (){
+        $scope.xhide = !$scope.xhide;
+    }
+    $scope.xhide = true;
 }])
 /*
     factory : audioCtx
