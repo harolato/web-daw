@@ -3,7 +3,7 @@
  */
 // Initialize application
 // Loads modules
-angular.module('waw', [ 'Devices', 'Instruments', 'keyboard', 'Sequencer', 'midiHandler']).
+angular.module('waw', [ 'Devices', 'Instruments', 'keyboard', 'midiHandler']).
     /*
     controller  : mainController
     description : It just sits there and provides $scope to child controllers

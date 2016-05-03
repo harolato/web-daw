@@ -306,7 +306,7 @@ controller('sequencerController', [function(){
     self.play = function () {
         self.sequencer.play();
     };
-    self.shit = function (){
+    self.debug = function (){
         self.currentTime = self.sequencer.getCurrentTime();
     };
     self.currentTime;

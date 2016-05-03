@@ -3,7 +3,7 @@
  */
 // Initialize application
 // Loads modules
-angular.module('waw', [ 'Devices', 'Instruments', 'keyboard', 'Sequencer', 'midiHandler']).
+angular.module('waw', [ 'Devices', 'Instruments', 'keyboard', 'midiHandler']).
     /*
     controller  : mainController
     description : It just sits there and provides $scope to child controllers
@@ -69,7 +69,6 @@ controller('mainController',['$scope', function($scope){
         return idstr;
     }
 });
-
 
 /**
  * Created by Haroldas Latonas on 4/10/2016.
@@ -393,10 +392,10 @@ directive('toggleDeviceState', ['$compile', function($compile){
                 }
             };
             // Random number generator
-            function randomNumber(min, max, incl) {
-                incl = (incl) ? 1 : 0;
-                return Math.floor(Math.random() * ( max - min + incl )) + min;
-            }
+            //function randomNumber(min, max, incl) {
+            //    incl = (incl) ? 1 : 0;
+            //    return Math.floor(Math.random() * ( max - min + incl )) + min;
+            //}
 
             //if ( vm.device.name ==  "sine synth") {
             //    vm.device.notes = [
@@ -619,10 +618,10 @@ service('devicesService',['utilitiesService','keyboardHelperService','audioCtx',
     // Array which holds all devices
     this.list = [];
 
-    function randomNumber(min, max, incl) {
-        incl = (incl) ? 1 : 0;
-        return Math.floor(Math.random() * ( max - min + incl )) + min;
-    }
+    //function randomNumber(min, max, incl) {
+    //    incl = (incl) ? 1 : 0;
+    //    return Math.floor(Math.random() * ( max - min + incl )) + min;
+    //}
 
     /*
     Random note generator for sequencer debugging
@@ -653,7 +652,7 @@ service('devicesService',['utilitiesService','keyboardHelperService','audioCtx',
     add new device to device array
     return : newly created device object
      */
-    this.add = function (id, instance) {
+    this.add = function (id) {
 
         // Gain node for individual device
         var gainNode = audioCtx.createGain();
@@ -661,8 +660,6 @@ service('devicesService',['utilitiesService','keyboardHelperService','audioCtx',
         var device = {
             '_id' : id,
             'name' : null,
-            // Device controller's instance
-            device_instance : instance,
             // Instruments instance
             instrument_instance : null,
             enabled : true,
@@ -696,9 +693,7 @@ service('devicesService',['utilitiesService','keyboardHelperService','audioCtx',
         var index = this.list.indexOf(device);
         // clean up
         device.instrument_instance = null;
-        device.device_instance.$destroy();
         device.effects_chain = null;
-        device.device_instance = null;
         device.gainNode.disconnect();
         device.gainNode = null;
         // remove device from array
@@ -927,7 +922,6 @@ factory('effectsService',['filter', 'visualization', 'reverb', function(f, viz, 
                 var block = $compile('<div class="stack-horizontally effect" effect-control="' + e.id + '"></div>')(childScope);
                 angular.element(es).after(block);
             };
-
         },
         controller : function ($scope) {
             $scope.effectsList = effectsService.effectsList;
@@ -1125,9 +1119,7 @@ desc        : Directive displays keyboard. When key is clicked controller sends 
         }
     }
 }]);
-/**
- * Created by Haroldas Latonas on 4/10/2016.
- */
+
 angular.module('midiHandler',[]).
     /*
     factory : requestMIDIAccess
@@ -1215,10 +1207,11 @@ desc    : Handles midi device connections. Keeps track of midi devices and their
     // Disconnect internal device from midi device
     var disconnect = function ( device ) {
         var d = findDevice(device, true);
-        console.log(devices[d]);
-        // Clear callback and user
-        devices[d].user = null;
-        devices[d].midi.onmidimessage = null;
+        if ( d >= 0 ) {
+            // Clear callback and user
+            devices[d].user = null;
+            devices[d].midi.onmidimessage = null;
+        }
     };
     // Get midi device current device is using
     var getActiveDevice = function (d) {
@@ -1630,7 +1623,7 @@ controller('sequencerController', [function(){
     self.play = function () {
         self.sequencer.play();
     };
-    self.shit = function (){
+    self.debug = function (){
         self.currentTime = self.sequencer.getCurrentTime();
     };
     self.currentTime;
@@ -1688,10 +1681,7 @@ factory('filter',['audioCtx','$timeout',function(audioCtx, $timeout){
                 filter.type = params.filterType;
                 //console.log(params);
                 updater = $timeout(update,200);
-                console.log('tick');
             };
-
-
 
             localInputGainNode.connect(filter);
             filter.connect(localOutputGainNode);
@@ -2256,12 +2246,6 @@ angular.module('simpleSynth', [])
                 //console.log(freq,name, osc);
             };
 
-            var stopAll = function () {
-                for ( var i = 0 ; i < activeNotes.length ; i++ ) {
-                    activeNotes[i].stop(0);
-                }
-            };
-
             var stop = function(frequency) {
                 var newNotes = [];
                 for ( var i = 0 ; i < activeNotes.length ; i++ ) {
@@ -2277,8 +2261,6 @@ angular.module('simpleSynth', [])
                 }
                 activeNotes = newNotes;
             };
-
-            gainNode.name = "instrument: " + devname;
             return {
                 set output(a) {
                     params.output.disconnect();

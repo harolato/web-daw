@@ -186,7 +186,6 @@ factory('effectsService',['filter', 'visualization', 'reverb', function(f, viz, 
                 var block = $compile('<div class="stack-horizontally effect" effect-control="' + e.id + '"></div>')(childScope);
                 angular.element(es).after(block);
             };
-
         },
         controller : function ($scope) {
             $scope.effectsList = effectsService.effectsList;

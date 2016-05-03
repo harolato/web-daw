@@ -1,6 +1,4 @@
-/**
- * Created by Haroldas Latonas on 4/10/2016.
- */
+
 angular.module('midiHandler',[]).
     /*
     factory : requestMIDIAccess
@@ -88,10 +86,11 @@ desc    : Handles midi device connections. Keeps track of midi devices and their
     // Disconnect internal device from midi device
     var disconnect = function ( device ) {
         var d = findDevice(device, true);
-        console.log(devices[d]);
-        // Clear callback and user
-        devices[d].user = null;
-        devices[d].midi.onmidimessage = null;
+        if ( d >= 0 ) {
+            // Clear callback and user
+            devices[d].user = null;
+            devices[d].midi.onmidimessage = null;
+        }
     };
     // Get midi device current device is using
     var getActiveDevice = function (d) {

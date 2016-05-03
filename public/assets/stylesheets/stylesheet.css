@@ -1,8 +1,5 @@
 @import url(https://fonts.googleapis.com/css?family=Roboto+Slab:100,400,700);
 @import url(https://fonts.googleapis.com/css?family=Raleway:400,800);
-@font-face {
-  src: url("../fonts/Aller_Std_Rg.ttf");
-  font-family: 'Aller Regular'; }
 body {
   margin: 0;
   padding: 0;
@@ -28,7 +25,7 @@ master-gain {
   .device .device-disabled {
     background-color: #209884; }
   .device .device-name {
-    font-family: 'Aller Regular';
+    font-family: 'Raleway';
     text-align: center;
     margin-top: 10px; }
   .device .delete-device-icon {
@@ -92,7 +89,7 @@ master-gain {
       height: inherit;
       background-color: #008f83;
       padding: 2px 0px 0px 15px;
-      font-family: "Aller Regular"; }
+      font-family: "Raleway"; }
 
 .inl {
   display: inline-block; }
@@ -450,7 +447,7 @@ input {
     #instrument-settings .top-line * {
       display: inline-block; }
     #instrument-settings .top-line .device-name-bar .device-name {
-      font-family: "Aller Regular";
+      font-family: "Raleway";
       font-size: 1.6em; }
     #instrument-settings .top-line input {
       margin-left: 5px;
@@ -467,5 +464,18 @@ input {
 .visualizer {
   width: 500px;
   height: 250px; }
+
+.footer {
+  position: fixed;
+  bottom: 0px;
+  background-image: url("../images/top-bar-background.png");
+  background-position: -40px 30px;
+  background-color: #00b2a3;
+  width: 100%; }
+  .footer span {
+    float: right;
+    margin-right: 10px; }
+  .footer a {
+    color: #ffffff; }
 
 /*# sourceMappingURL=stylesheet.css.map */

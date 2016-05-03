@@ -85,12 +85,6 @@ angular.module('simpleSynth', [])
                 //console.log(freq,name, osc);
             };
 
-            var stopAll = function () {
-                for ( var i = 0 ; i < activeNotes.length ; i++ ) {
-                    activeNotes[i].stop(0);
-                }
-            };
-
             var stop = function(frequency) {
                 var newNotes = [];
                 for ( var i = 0 ; i < activeNotes.length ; i++ ) {
@@ -106,8 +100,6 @@ angular.module('simpleSynth', [])
                 }
                 activeNotes = newNotes;
             };
-
-            gainNode.name = "instrument: " + devname;
             return {
                 set output(a) {
                     params.output.disconnect();

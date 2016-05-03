@@ -320,10 +320,10 @@ directive('toggleDeviceState', ['$compile', function($compile){
                 }
             };
             // Random number generator
-            function randomNumber(min, max, incl) {
-                incl = (incl) ? 1 : 0;
-                return Math.floor(Math.random() * ( max - min + incl )) + min;
-            }
+            //function randomNumber(min, max, incl) {
+            //    incl = (incl) ? 1 : 0;
+            //    return Math.floor(Math.random() * ( max - min + incl )) + min;
+            //}
 
             //if ( vm.device.name ==  "sine synth") {
             //    vm.device.notes = [
@@ -546,10 +546,10 @@ service('devicesService',['utilitiesService','keyboardHelperService','audioCtx',
     // Array which holds all devices
     this.list = [];
 
-    function randomNumber(min, max, incl) {
-        incl = (incl) ? 1 : 0;
-        return Math.floor(Math.random() * ( max - min + incl )) + min;
-    }
+    //function randomNumber(min, max, incl) {
+    //    incl = (incl) ? 1 : 0;
+    //    return Math.floor(Math.random() * ( max - min + incl )) + min;
+    //}
 
     /*
     Random note generator for sequencer debugging
@@ -580,7 +580,7 @@ service('devicesService',['utilitiesService','keyboardHelperService','audioCtx',
     add new device to device array
     return : newly created device object
      */
-    this.add = function (id, instance) {
+    this.add = function (id) {
 
         // Gain node for individual device
         var gainNode = audioCtx.createGain();
@@ -588,8 +588,6 @@ service('devicesService',['utilitiesService','keyboardHelperService','audioCtx',
         var device = {
             '_id' : id,
             'name' : null,
-            // Device controller's instance
-            device_instance : instance,
             // Instruments instance
             instrument_instance : null,
             enabled : true,
@@ -623,9 +621,7 @@ service('devicesService',['utilitiesService','keyboardHelperService','audioCtx',
         var index = this.list.indexOf(device);
         // clean up
         device.instrument_instance = null;
-        device.device_instance.$destroy();
         device.effects_chain = null;
-        device.device_instance = null;
         device.gainNode.disconnect();
         device.gainNode = null;
         // remove device from array

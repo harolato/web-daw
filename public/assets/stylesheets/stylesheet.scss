@@ -1,11 +1,6 @@
 @import url(https://fonts.googleapis.com/css?family=Roboto+Slab:100,400,700);
 @import url(https://fonts.googleapis.com/css?family=Raleway:400,800);
 
-@font-face {
-  src: url('../fonts/Aller_Std_Rg.ttf');
-  font-family: 'Aller Regular';
-}
-
 body {
   margin:0;
   padding:0;
@@ -34,7 +29,7 @@ master-gain {
     color: #fff;
     position: relative;
     .device-name {
-      font-family:'Aller Regular';
+      font-family:'Raleway';
       text-align: center;
       margin-top:10px;
     }
@@ -114,7 +109,7 @@ master-gain {
       height: inherit;
       background-color: #008f83;
       padding:2px 0px 0px 15px;
-      font-family: "Aller Regular";
+      font-family: "Raleway";
     }
   }
 }
@@ -548,7 +543,7 @@ input{
       }
       .device-name-bar {
         .device-name {
-          font-family: "Aller Regular";
+          font-family: "Raleway";
           font-size: 1.6em;
         }
       }
@@ -574,4 +569,19 @@ input{
 .visualizer {
   width:500px;
   height:250px;
+}
+.footer {
+  position:fixed;
+  bottom: 0px;
+  background-image: url('../images/top-bar-background.png');
+  background-position: -40px 30px;
+  background-color: #00b2a3;
+  width: 100%;
+  span {
+    float: right;
+    margin-right:10px;
+  }
+  a {
+    color: #ffffff;
+  }
 }

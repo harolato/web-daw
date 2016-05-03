@@ -42,10 +42,7 @@ factory('filter',['audioCtx','$timeout',function(audioCtx, $timeout){
                 filter.type = params.filterType;
                 //console.log(params);
                 updater = $timeout(update,200);
-                console.log('tick');
             };
-
-
 
             localInputGainNode.connect(filter);
             filter.connect(localOutputGainNode);
