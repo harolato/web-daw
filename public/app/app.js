@@ -3,16 +3,21 @@
  */
 // Initialize application
 // Loads modules
-angular.module('waw', [ 'Devices', 'Instruments', 'keyboard', 'midiHandler']).
+angular.module('waw', [ 'Devices', 'Instruments', 'keyboard', 'midiHandler', 'Sequencer']).
     /*
     controller  : mainController
     description : It just sits there and provides $scope to child controllers
  */
-controller('mainController',['$scope', function($scope){
-    $scope.play = function (){
-        $scope.xhide = !$scope.xhide;
+controller('mainController',['$scope','schedulerService', function($scope, schedulerService){
+    $scope.schedulerParams = schedulerService.params;
+    var pad = function(n, width, z) {
+        z = z || '0';
+        n = n + '';
+        return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
     }
-    $scope.xhide = true;
+    $scope.$watch("schedulerParams.currentTime", function(n){
+        $scope.currentTime = pad(String(Math.round(n/60)),2) + ":" + pad(String(n).split(".")[0],2) + ":" + pad(String(Math.round(n*1000%1000)),3);
+    });
 }])
 /*
     factory : audioCtx
@@ -49,6 +54,11 @@ controller('mainController',['$scope', function($scope){
     // return node
     return mGain;
 })
+
+
+.service('tunaEffectsService', ['audioCtx',function (audioCtx) {
+    this.tuna = new Tuna(audioCtx);
+}])
     /*
     service : utilitiesService
     desc    : Miscellaneous utility functions for example

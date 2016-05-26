@@ -15,7 +15,8 @@
     <link href="assets/stylesheets/stylesheet.css" rel="stylesheet">
     <!--ngular-->
     <script src="assets/angular/angular.min.js"></script>
-
+    <!--tuna-->
+    <script src="assets/scripts/tuna-min.js"></script>
     <script src="app.js"></script>
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -24,7 +25,7 @@
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
 </head>
-<body ng-app="waw" ng-controller="mainController as main">
+<body ng-app="waw" ng-controller="mainController">
 <div id="top-bar" class="container">
     <div class="row">
         <div class="col-sm-6">
@@ -38,7 +39,7 @@
                             <span class="fa fa-plus"></span>
                         </div>
                         <div class="name-input inl">
-                            <input type="text" placeholder="New project name...">
+                            <input type="text" placeholder="New project...">
                         </div>
                         <div class="action-buttons inl">
                             <span class="fa fa-save"></span>
@@ -50,17 +51,7 @@
         </div>
         <div class="col-sm-6 text-right">
             <div class="row">
-                <div class="col-sm-10">
-                    <input class="bpm" placeholder="120BPM" size="3">
-                </div>
-                <div class="col-sm-2">
-                    <div align="right" ng-click="play()" class="play-button">
-                        <span class="fa fa fa-play"></span>
-                    </div>
-                    <div class="x" ng-hide="xhide">
-                        <img src="../assets/images/x.gif"/>
-                    </div>
-                </div>
+                <div scheduler-controls></div>
             </div>
         </div>
     </div>
@@ -69,7 +60,7 @@
     <div class="row">
         <div class="col-sm-6">
             <div id="current-time-box">
-                Current time: <span>00:22:500</span>
+                Current time: <span>{{currentTime}}</span>
             </div>
         </div>
         <div class="col-sm-6 text-right">
@@ -84,17 +75,33 @@
 
     <div class="row">
         <div class="col-sm-9 col-sm-offset-3 timescale">
-            <span ng-repeat="n in [1,2,3,4,5,6,7,8,9,10,11,12]">{{n}}</span>
             <div class="time-seeker"></div>
+            <div class="timescale-wrapper-outter">
+                <div class="timescale-wrapper-inner">
+                    <canvas id="timescale-canvas" width="5000">
+                        <script>
+                            var c = document.getElementById("timescale-canvas");
+                            var ctx = c.getContext("2d");
+                            ctx.font = "12px Arial";
+                            ctx.textAlign = "center";
+                            for (var i = 0 ; i < 50 ; i++)
+                            ctx.fillText(i, (i*5*16), 10);
+                        </script>
+                    </canvas>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="device row" device identification="squaresynth" enabled="true" instrument="simple_synth"></div>
+    <div class="device row" device identification="squaresynth" notes="1" enabled="true" instrument="simple_synth"></div>
 
-    <div class="device row" device identification="sinesynth" enabled="true" instrument="simple_synth"></div>
+    <div class="device row" device identification="sampler" notes="2" enabled="true" instrument="simple_sampler"></div>
 
-    <div class="device row" device identification="anothersquaresynth" enabled="true" instrument="simple_synth"></div>
+    <div class="device row" device identification="anothersquaresynth" notes="3" enabled="true" instrument="simple_synth"></div>
 
+    <div class="row">
+        <div class="col-sm-9 col-sm-offset-3 scroll-bar" scroll-bar></div>
+    </div>
 </div>
 <div class="container add-new-device-container" add-new-device>
 

@@ -48,7 +48,7 @@ desc        : Directive displays keyboard. When key is clicked controller sends 
                 // Find a device which is using keyboard
                 var device = keyboardHelperService.getKeyboardUser();
                 // Send note signal to instrument associated with that device
-                device.instrument_instance.play(freq, device._id);
+                device.instrument_instance.play(freq, null);
             };
             vm.keyUp = function (note, freq) {
                 var device = keyboardHelperService.getKeyboardUser();

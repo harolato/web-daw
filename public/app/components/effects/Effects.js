@@ -7,13 +7,13 @@ Effects module
 desc    : responsible for creating new instances of effect classes
           Effect routing etc.
  */
-angular.module('Effects', ['filterEffect', 'visualizationEffect', 'reverbEffect']).
+angular.module('Effects', ['filterEffect', 'visualizationEffect', 'reverbEffect','chorusTunaEffect']).
     /*
 factory : effectsService
 desc    : Contains functionality to load an effect, performs effect audio routing
           and hold a list of available effects
  */
-factory('effectsService',['filter', 'visualization', 'reverb', function(f, viz, reverb){
+factory('effectsService',['filter', 'visualization', 'reverb','chorusTuna', function(f, viz, reverb,chorusTuna){
     var effectsList = [
         {
             name    : 'Filter',
@@ -29,6 +29,12 @@ factory('effectsService',['filter', 'visualization', 'reverb', function(f, viz, 
             name    : 'Reverb',
             id      : 'reverb',
             effect  : reverb
+        }
+        ,
+        {
+            name    : 'Chorus - Tuna',
+            id      : 'chorus',
+            effect  : chorusTuna
         }
     ];
     /*

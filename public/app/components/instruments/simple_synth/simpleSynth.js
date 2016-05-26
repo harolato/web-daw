@@ -34,17 +34,40 @@ angular.module('simpleSynth', [])
                     pan     : 0,
                 }
             };
-
-            var initOscillators = function (freq) {
+            /*
+            schedule {
+                start, stop, velocity
+            }
+             */
+            var initOscillators = function (freq, schedule, velocity) {
+                if ( !velocity ) {
+                    velocity = 127;
+                }
+                velocity /= 127;
+                var scheduled;
+                if ( !schedule ) {
+                    var schedule = {
+                        start : 0,
+                        stop  : 0
+                    }
+                    scheduled = false;
+                } else {
+                    scheduled = true;
+                }
+                //console.log(velocity);
                 var oscillators = {
                     freq : freq,
                     osc : []
                 };
+                var velocityNode = audioCtx.createGain();
+                velocityNode.gain.value = parseFloat(velocity); // TODO Tune velocity
+                //console.log(velocityNode.gain.value);
                 if ( params.osc1.enabled ) {
                     var osc1 = audioCtx.createOscillator();
                     osc1.name = devname;
                     osc1.connect(stereoPanner1);
                     stereoPanner1.connect(params.output);
+                    //velocityNode.connect(params.output);
                     for ( var i = 0 ; i < Math.abs(params.osc1.octave) ; i++ ) {
                         if ( params.osc1.octave < 0 ) {
                             freq -= freq/2;
@@ -55,14 +78,19 @@ angular.module('simpleSynth', [])
                     osc1.frequency.value = freq;
                     osc1.type = params.osc1.synthType;
                     //this.params.device.gainNode.gain.setValueAtTime(velocity, audioCtx.currentTime + start);
-                    osc1.start(0);
+                    osc1.start(schedule.start);
                     oscillators.osc.push(osc1);
+                    if ( scheduled ) {
+                        osc1.stop(schedule.stop);
+                    }
+
                 }
                 if ( params.osc2.enabled ) {
                     osc2 = audioCtx.createOscillator();
                     osc2.name = devname;
                     osc2.connect(stereoPanner2);
                     stereoPanner2.connect(params.output);
+                    //velocityNode.connect(params.output);
                     for ( var i = 0 ; i < Math.abs(params.osc2.octave) ; i++ ) {
                         if ( params.osc2.octave < 0 ) {
                             freq -= freq/2;
@@ -70,25 +98,28 @@ angular.module('simpleSynth', [])
                             freq += freq*2;
                         }
                     }
-                    osc2.frequency.value = freq ;
+                    osc2.frequency.value = freq;
 
                     osc2.type = params.osc2.synthType;
                     //this.params.device.gainNode.gain.setValueAtTime(velocity, audioCtx.currentTime + start);
-                    osc2.start(0);
+                    osc2.start(schedule.start);
                     oscillators.osc.push(osc2);
+                    if ( scheduled ) {
+                        osc2.stop(schedule.stop);
+                    }
                 }
                 return oscillators;
             };
-            var play = function(freq,name) {
-                var osc = initOscillators(freq);
+            var play = function(freq, schedule, velocity) {
+                var osc = initOscillators(freq, schedule, velocity);
                 activeNotes.push(osc);
-                //console.log(freq,name, osc);
             };
 
-            var stop = function(frequency) {
+
+            var stop = function(frequency, stopAll) {
                 var newNotes = [];
                 for ( var i = 0 ; i < activeNotes.length ; i++ ) {
-                    if ( Math.round(activeNotes[i].freq) === Math.round(frequency) ) {
+                    if ( (Math.round(activeNotes[i].freq) === Math.round(frequency)) || stopAll ) {
                         activeNotes[i].osc.forEach(function(o){
                             o.stop(0);
                             //console.log(o.name);

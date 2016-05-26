@@ -39,18 +39,35 @@ desc    : Handles midi device connections. Keeps track of midi devices and their
         // Get promise
         var access = requestMIDIAccess.requestAccess();
         // Initiate promise
+        var inputs = [];
+        var outputs = [];
         access.then(function (access){
             // If successful
             // Scan through all devices and add them to a list
+
             access.inputs.forEach(function ( i ) {
+                inputs.push(i);
+            });
+            access.outputs.forEach(function( o ){
+                outputs.push(o);
+            });
+            for ( var p = 0 ; p < inputs.length ; p++ ) {
                 devices.push({
                     user : null,
-                    midi : i
+                    midi : {
+                        input : inputs[p],
+                        output: outputs[p]
+                    }
                 });
-            });
+            }
             service.devices = devices;
         });
     };
+
+    var calcFreq = function (MIDINote) {
+      return (440 * Math.pow(2, (MIDINote - 69) / 12))
+    };
+
     // Callback for midi message
     var onMessage = function (e, user) {
         // Debugging
@@ -58,13 +75,24 @@ desc    : Handles midi device connections. Keeps track of midi devices and their
         service.val2 = e.data[2];
         service.val = e.data[0];
         // Key down event
-        if ( e.data[0] == 144 ) {
+        //console.log(e.data[0], e.data[1], e.data[2]);
+        if ( e.data[0] == 144 && e.data[2] > 0 ) {
             // Send note signal to device
-            user.instrument_instance.play((440 * Math.pow(2, (e.data[1] - 69) / 12)), user._id);
-        } else if ( e.data[0] == 128 ) { // Key up event
-            user.instrument_instance.stop((440 * Math.pow(2, (e.data[1] - 69) / 12)));
+            user.instrument_instance.play(calcFreq(e.data[1]), null, e.data[2]);
+        } else if ( e.data[0] == 128 || (e.data[0] == 144 && e.data[2] == 0) ) { // Key up event
+            user.instrument_instance.stop(calcFreq(e.data[1]));
         }
     };
+    function dec2hex(d, padding) {
+        var hex = Number(d).toString(16);
+        padding = typeof (padding) === "undefined" || padding === null ? padding = 2 : padding;
+
+        while (hex.length < padding) {
+            hex = "0" + hex;
+        }
+
+        return hex;
+    }
     // Connect internal device together with external midi device
     var connect = function (device, user) {
         if ( device && user ) {
@@ -76,7 +104,7 @@ desc    : Handles midi device connections. Keeps track of midi devices and their
                     // Assign device instance
                     devices[d].user = user;
                     // Attach callback to midi message event
-                    devices[d].midi.onmidimessage = function (e) {
+                    devices[d].midi.input.onmidimessage = function (e) {
                         onMessage(e, user);
                     };
                 }
@@ -89,12 +117,16 @@ desc    : Handles midi device connections. Keeps track of midi devices and their
         if ( d >= 0 ) {
             // Clear callback and user
             devices[d].user = null;
-            devices[d].midi.onmidimessage = null;
+            devices[d].midi.input.onmidimessage = null;
+            for (var i = 21 ; i < 109 ; i++) {
+                devices[d].midi.output.send(["0x"+dec2hex(144),"0x"+dec2hex(i),0x00]);
+            }
         }
     };
     // Get midi device current device is using
     var getActiveDevice = function (d) {
         var d = findDevice(d, true);
+        //console.log(d);
         if ( d > -1 ){
             return devices[d];
         } else {
@@ -107,7 +139,7 @@ desc    : Handles midi device connections. Keeps track of midi devices and their
         var result = null;
         devices.some(function ( d ) {
             if ( !active ) {
-                if ( d.midi.id == device.midi.id  ) {
+                if ( d.midi.input.id == device.midi.input.id  ) {
                     //console.log(d.midi.id, device.midi.id);
                     result = d;
                     return true;

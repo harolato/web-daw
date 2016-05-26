@@ -11,11 +11,114 @@ angular.module('Devices', ['Instruments']).
                   This feature not fully implemented. Only for presentation.
 
      */
-directive('notesPreview', [function(){
+directive('notesPreview', ['schedulerService','$timeout',function(schedulerService, $timeout){
     return {
         restrict : "A",
-        require : "^device",
-        template : ''
+        scope: true,
+        link : function($scope, $element){
+
+        },
+        controller : function($scope) {
+            var notes = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+            //console.log(notes);
+            $scope.schedulerParams = schedulerService.params;
+            $scope.$watch("schedulerParams.BPM", function(n){
+               //console.log(n);
+            });
+            $scope.noteCoordinates;
+            $scope.$watchGroup(["device.notes", "schedulerParams.BPM"], function(n){
+                if ( $scope.device.notes ) {
+                    //console.log(n);
+                    var noteCoordinates = [];
+                    var hiLoNotes = {
+                        highest: {
+                            index: -1,
+                            octave: -1,
+                            value: 0
+                        },
+                        lowest: {
+                            index: 11,
+                            octave: 20,
+                            value: 99999
+                        }
+                    };
+                    $scope.device.notes.forEach(function (note) {
+                        var letter;
+                        var octave;
+                        var value;
+                        if (note.length === 3) {
+                            letter = note.note.substr(0, 1);
+                            octave = parseInt(note.note.charAt(2));
+                        } else {
+                            letter = note.note.charAt(0);
+                            octave = parseInt(note.note.charAt(1));
+                        }
+                        value = ((notes.indexOf(letter) + 1) * 10) + (1000 * octave );
+                        if (
+                            value > hiLoNotes.highest.value
+                        ) {
+                            hiLoNotes.highest.index = notes.indexOf(letter);
+                            hiLoNotes.highest.octave = octave;
+                            hiLoNotes.highest.value = value;
+                        }
+                        if (
+                            hiLoNotes.lowest.value > value
+                        ) {
+                            hiLoNotes.lowest.index = notes.indexOf(letter);
+                            hiLoNotes.lowest.octave = octave;
+                            hiLoNotes.lowest.value = value;
+                        }
+                    });
+                    var range = function () {
+                        var range = 0;
+                        var diff = (hiLoNotes.highest.octave - hiLoNotes.lowest.octave);
+                        //console.log("Diff:",hiLoNotes);
+                        for (var i = 0; i < diff; i++) {
+                            range += notes.length - (hiLoNotes.lowest.index + 1);
+                            if (diff <= 1) {
+                                range += hiLoNotes.highest.index + 1;
+                            } else {
+                                range += 12
+                            }
+                        }
+                        return range;
+                    };
+                    $scope.device.notes.forEach(function (note) {
+                        var timings = schedulerService.calculateNoteTiming(note);
+                        var letter;
+                        var octave;
+                        if (note.note.length === 3) {
+                            letter = note.note.substr(0, 2);
+                            octave = note.note.charAt(2);
+                        } else {
+                            letter = note.note.charAt(0);
+                            octave = note.note.charAt(1);
+                        }
+
+                        //value = ((notes.indexOf(letter)+1)*10) + (1000 * octave );
+                        //console.log(range(), value, letter);
+                        var position = 0;
+                        if (octave == hiLoNotes.lowest.octave) {
+                            position += notes.indexOf(letter) + 1;
+                        } else if (octave == hiLoNotes.highest.octave) {
+                            position += (11 * (hiLoNotes.highest.octave - hiLoNotes.lowest.octave)) + notes.indexOf(letter) + 1
+                        }
+                        var x = timings.time.start * 80;
+                        var y = 132 - position * (132 / range());
+                        var w = (timings.time.end - timings.time.start) * 80;
+                        var h = 132 / range();
+                        noteCoordinates.push({
+                            x: x,
+                            y: y,
+                            w: w,
+                            h: h
+                        });
+                    });
+                    $scope.noteCoordinates = noteCoordinates;
+                }
+            });
+        },
+        templateUrl : 'app/components/device/notes-preview.html'
     }
 }]).
     /*
@@ -169,7 +272,7 @@ directive('toggleDeviceState', ['$compile', function($compile){
                   is clicked new device gets created
     return      :
      */
-.directive('addNewDevice', ['InstrumentsService','$compile','utilitiesService',function (InstrumentsService, $compile,utilitiesService) {
+.directive('addNewDevice', ['InstrumentsService','$compile','utilitiesService','$rootScope',function (InstrumentsService, $compile,utilitiesService, $rootScope) {
     return {
         restrict    : "A",
         scope       : true,
@@ -180,10 +283,12 @@ directive('toggleDeviceState', ['$compile', function($compile){
             $scope.addDevice = function (i) {
                 // Generate unique id for our new device
                 var id = utilitiesService.uniqueId();
+                var last = document.querySelectorAll(".row.device");
+                last = last[last.length-1];
                 // compile element so device directive can process it further
                 var el = $compile('<div class="device row" device identification="' + id + '" enabled="true" instrument="' + i.id + '"></div>')($scope.$new());
                 // Attach newly compiled element to the end of devices list
-                angular.element(document.querySelector('.devices-container')).append(el);
+                angular.element(last).after(el);
             }
         },
         templateUrl : "app/components/device/addNewDevice.html"
@@ -198,7 +303,7 @@ directive('toggleDeviceState', ['$compile', function($compile){
                      - settings: displays full range of settings for present device
 
  */
-.directive('device', function ($compile, devicesService, InstrumentsService, masterGain,$rootScope) {
+.directive('device', function ($compile, devicesService, InstrumentsService, masterGain,$rootScope, schedulerService) {
     return {
         restrict : "A",
         // Assign attributes to scope
@@ -206,7 +311,8 @@ directive('toggleDeviceState', ['$compile', function($compile){
             instrument_name : '@instrument',
             identification : '@',
             enabled : '=',
-            type : '@device'
+            type : '@device',
+            notes : '='
         },
 
         link : function ($scope, $el){
@@ -219,12 +325,14 @@ directive('toggleDeviceState', ['$compile', function($compile){
                 // Close settings box in case it is open
                 $scope.closeSettings();
             };
+
         },
         controller : function ( $scope) {
             var vm = $scope;
             // Create child scope for settings box
             var childScope = null;
             // handle click event for close settings box
+            var settingz = false;
             $scope.closeSettings = function () {
                 // Let other components ,such as effects or instruments, know that settings box is being closed
                 $rootScope.$emit('closingSettings');
@@ -232,9 +340,12 @@ directive('toggleDeviceState', ['$compile', function($compile){
                 var settings = angular.element( document.querySelector('#instrument-settings'));
                 // Clear contents of a settings box
                 settings.empty();
+                settingz = false;
             };
             // handle click event for opening settings box
+
             $scope.openSettings = function(){
+                settingz = true;
                 // find settings box
                 var settings = angular.element( document.querySelector('div#instrument-settings'));
                 // Clear contents of a settings box in case there is one open
@@ -250,12 +361,6 @@ directive('toggleDeviceState', ['$compile', function($compile){
                 // Attach to DOM newly compiled element
                 settings.append(el);
             };
-            // Initial parameters for a device
-            vm.params = {
-                // Volume of a device
-                gain : 0.2,
-                enabled : vm.enabled
-            };
 
             // Initialize device object for data binding
 
@@ -270,12 +375,18 @@ directive('toggleDeviceState', ['$compile', function($compile){
                 // Route instrument's output to device's gain node
                 vm.device.instrument_instance.output = vm.device.gainNode;
                 // Assign a name of present device to instrument for debugging purposes
-                vm.device.instrument_instance.devname = vm.identification;
+                vm.device.instrument_instance.devname = vm.device._id;
             } else { // Type is set, so we are dealing with settings box
                 // get existing device and set it to this scope
                 vm.device = devicesService.get(vm.identification);
             }
 
+            // Initial parameters for a device
+            vm.params = {
+                // Volume of a device
+                gain : (vm.type == "")? 0.2 : vm.device.gainNode.gain.value,
+                enabled : (vm.type == "") ? vm.enabled:vm.device.enabled
+            };
             // Set device state
             vm.device.enabled = vm.params.enabled;
 
@@ -287,7 +398,11 @@ directive('toggleDeviceState', ['$compile', function($compile){
             // watch for volume changes
             vm.$watch('params.gain', function(val) {
                 if ( !isNaN(val) ) {
-                    vm.device.gainNode.gain.value = val;
+                    if ( vm.device.enabled ) {
+                        vm.device.gainNode.gain.value = val;
+                    } else {
+                        vm.device.gainNode.gain.value = 0;
+                    }
                 } else {
                     console.log("nan");
                 }
@@ -302,10 +417,17 @@ directive('toggleDeviceState', ['$compile', function($compile){
 
             // Toggle device state. Enable/Disable
 
+
+
             vm.toggleEnabled = function (nonDirective) {
                 if (!nonDirective) vm.device.enabled = !vm.device.enabled;
+                if ( !vm.device.enabled ) {
+                    vm.device.gainNode.gain.value = 0;
+                } else {
+                    vm.device.gainNode.gain.value = vm.params.gain;
+                }
+
                 vm.$apply();
-                console.log(vm.device.enabled);
             };
 
             // Toggle note input. Enable/Disable
@@ -320,219 +442,186 @@ directive('toggleDeviceState', ['$compile', function($compile){
                 }
             };
             // Random number generator
-            //function randomNumber(min, max, incl) {
-            //    incl = (incl) ? 1 : 0;
-            //    return Math.floor(Math.random() * ( max - min + incl )) + min;
-            //}
-
-            //if ( vm.device.name ==  "sine synth") {
-            //    vm.device.notes = [
-            //        { // 1/8 G , 1st bar beginning , 1st quarter note beginning
-            //            target  : instance,
-            //            start   : "0.0.0",
-            //            end     : "0.1.0",
-            //            note    : "G2",
-            //            velocity: parseFloat("0." + randomNumber(3,9)) // Velocity indicated note volume
-            //        },
-            //        {// 1/8 G
-            //            target  : instance,
-            //            start   : "0.2.0",
-            //            end     : "0.3.0",
-            //            note    : "G2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/8 E    2nd quarter note. 1/8+1/8 = 1/4
-            //            target  : instance,
-            //            start   : "0.0.1",
-            //            end     : "0.1.1",
-            //            note    : "E2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/8 C
-            //            target  : instance,
-            //            start   : "0.2.1",
-            //            end     : "0.3.1",
-            //            note    : "C2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/8 G
-            //            target  : instance,
-            //            start   : "0.0.2",
-            //            end     : "0.1.2",
-            //            note    : "G2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/8 G
-            //            target  : instance,
-            //            start   : "0.2.2",
-            //            end     : "0.3.2",
-            //            note    : "G2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/8 E
-            //            target  : instance,
-            //            start   : "0.0.3",
-            //            end     : "0.1.3",
-            //            note    : "E2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/8 C
-            //            target  : instance,
-            //            start   : "0.2.3",
-            //            end     : "0.3.3",
-            //            note    : "C2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/8 F   2nd bar beginning
-            //            target  : instance,
-            //            start   : "1.0.0",
-            //            end     : "1.1.0",
-            //            note    : "F2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/8 A
-            //            target  : instance,
-            //            start   : "1.2.0",
-            //            end     : "1.3.0",
-            //            note    : "A2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/8 C
-            //            target  : instance,
-            //            start   : "1.0.1",
-            //            end     : "1.1.1",
-            //            note    : "C3",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/8 A
-            //            target  : instance,
-            //            start   : "1.2.1",
-            //            end     : "1.3.1",
-            //            note    : "A2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/4 G
-            //            target  : instance,
-            //            start   : "1.0.2",
-            //            end     : "1.3.2",
-            //            note    : "G2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/4 G
-            //            target  : instance,
-            //            start   : "1.0.3",
-            //            end     : "1.3.3",
-            //            note    : "G2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        }];
-            //} else if ( vm.device.name == "square synth" ) {
-            //    vm.device.notes = [
-            //        { // 1/8 G , 1st bar beginning , 1st quarter note beginning
-            //            target  : instance,
-            //            start   : "0.0.0",
-            //            end     : "0.0.1",
-            //            note    : "G4",
-            //            velocity: 1  // Velocity indicated note volume
-            //        },
-            //        {// 1/8 G
-            //            target  : instance,
-            //            start   : "0.0.1",
-            //            end     : "0.1.0",
-            //            note    : "G4",
-            //            velocity: 1
-            //        },
-            //        {// 1/8 E    2nd quarter note. 1/8+1/8 = 1/4
-            //            target  : instance,
-            //            start   : "0.1.0",
-            //            end     : "0.1.1",
-            //            note    : "E4",
-            //            velocity: 1
-            //        },
-            //        {// 1/8 C
-            //            target  : instance,
-            //            start   : "0.1.1",
-            //            end     : "0.2.0",
-            //            note    : "C4",
-            //            velocity: 1
-            //        },
-            //        {// 1/8 G
-            //            target  : instance,
-            //            start   : "0.2.0",
-            //            end     : "0.2.1",
-            //            note    : "G4",
-            //            velocity: 1
-            //        },
-            //        {// 1/8 G
-            //            target  : instance,
-            //            start   : "0.2.1",
-            //            end     : "0.3.0",
-            //            note    : "G4",
-            //            velocity: 1
-            //        },
-            //        {// 1/8 E
-            //            target  : instance,
-            //            start   : "0.3.0",
-            //            end     : "0.3.1",
-            //            note    : "E4",
-            //            velocity: 1
-            //        },
-            //        {// 1/8 C
-            //            target  : instance,
-            //            start   : "0.3.1",
-            //            end     : "1.0.0",
-            //            note    : "C4",
-            //            velocity: 1
-            //        },
-            //        {// 1/8 F   2nd bar beginning
-            //            target  : instance,
-            //            start   : "1.0.0",
-            //            end     : "1.0.1",
-            //            note    : "F4",
-            //            velocity: 1
-            //        },
-            //        {// 1/8 A
-            //            target  : instance,
-            //            start   : "1.0.1",
-            //            end     : "1.1.0",
-            //            note    : "A4",
-            //            velocity: 1
-            //        },
-            //        {// 1/8 C
-            //            target  : instance,
-            //            start   : "1.1.0",
-            //            end     : "1.1.1",
-            //            note    : "C5",
-            //            velocity: 1
-            //        },
-            //        {// 1/8 A
-            //            target  : instance,
-            //            start   : "1.1.1",
-            //            end     : "1.2.0",
-            //            note    : "A4",
-            //            velocity: 1
-            //        },
-            //        {// 1/4 G
-            //            target  : instance,
-            //            start   : "1.2.0",
-            //            end     : "1.3.0",
-            //            note    : "G4",
-            //            velocity: 1
-            //        },
-            //        {// 1/4 G
-            //            target  : instance,
-            //            start   : "1.3.0",
-            //            end     : "2.0.0",
-            //            note    : "G4",
-            //            velocity: 1
-            //        }];
-            //}
+            function randomNumber(min, max, incl) {
+                incl = (incl) ? 1 : 0;
+                return Math.floor(Math.random() * ( max - min + incl )) + min;
+            }
+            var instance = vm.device;
+            if ( vm.notes == "1") {
+                vm.device.notes = [
+                    { // 1/8 G , 1st bar beginning , 1st quarter note beginning
+                        target: instance,
+                        start: "0.0.0",
+                        end: "0.0.1",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true) // Velocity indicates note volume
+                    },
+                    {// 1/8 G
+                        target: instance,
+                        start: "0.0.1",
+                        end: "0.0.2",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 E    2nd quarter note. 1/8+1/8 = 1/4
+                        target: instance,
+                        start: "0.1.0",
+                        end: "0.1.1",
+                        note: "E2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 C
+                        target: instance,
+                        start: "0.1.1",
+                        end: "0.1.2",
+                        note: "C2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 G
+                        target: instance,
+                        start: "0.2.0",
+                        end: "0.2.1",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 G
+                        target: instance,
+                        start: "0.2.1",
+                        end: "0.2.2",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 E
+                        target: instance,
+                        start: "0.3.0",
+                        end: "0.3.1",
+                        note: "E2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 C
+                        target: instance,
+                        start: "0.3.1",
+                        end: "0.3.2",
+                        note: "C2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 F   2nd bar beginning
+                        target: instance,
+                        start: "1.0.0",
+                        end: "1.0.1",
+                        note: "F2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 A
+                        target: instance,
+                        start: "1.0.1",
+                        end: "1.0.2",
+                        note: "A2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 C
+                        target: instance,
+                        start: "1.1.0",
+                        end: "1.1.1",
+                        note: "C3",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 A
+                        target: instance,
+                        start: "1.1.1",
+                        end: "1.1.2",
+                        note: "A2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/4 G
+                        target: instance,
+                        start: "1.2.0",
+                        end: "1.2.2",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/4 G
+                        target: instance,
+                        start: "1.3.0",
+                        end: "1.3.2",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true)
+                    }];
+            } else if ( vm.notes == "2" ) {
+                vm.device.notes = [
+                    { // 1/8 G , 1st bar beginning , 1st quarter note beginning
+                        target: instance,
+                        start: "0.0.0",
+                        end: "0.0.1",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true) // Velocity indicates note volume
+                    },
+                    {// 1/8 G
+                        target: instance,
+                        start: "0.0.1",
+                        end: "0.0.2",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 G
+                        target: instance,
+                        start: "0.2.0",
+                        end: "0.2.1",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 G
+                        target: instance,
+                        start: "0.2.1",
+                        end: "0.2.2",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 E
+                        target: instance,
+                        start: "0.3.0",
+                        end: "0.3.1",
+                        note: "E2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/4 G
+                        target: instance,
+                        start: "1.2.0",
+                        end: "1.2.2",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/4 G
+                        target: instance,
+                        start: "1.3.0",
+                        end: "1.3.2",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true)
+                    }];
+            } else if ( vm.notes == "3" ) {
+                vm.device.notes = [
+                    { // 1/8 G , 1st bar beginning , 1st quarter note beginning
+                        target: instance,
+                        start: "0.0.0",
+                        end: "0.0.1",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true) // Velocity indicates note volume
+                    },
+                    {// 1/8 G
+                        target: instance,
+                        start: "0.0.1",
+                        end: "0.0.2",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true)
+                    }];
+            }
             this.scope = vm;
         },
         templateUrl : function (e, a){
                 if ( a.device == "" ) {
                     return 'app/components/device/view.html';
                 } else {
-                    return'app/components/device/device-settings.html'
+                    return 'app/components/device/device-settings.html'
                 }
             }
         }

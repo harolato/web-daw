@@ -1,0 +1,42 @@
+<div class="stack-horizontally">
+    <div class="control-block stack-vertically">
+        <span class="label">Gain(Volume)</span>
+        <div slider class="slider-outter" ng-model="instrument.volume" min="0" max="1"></div>
+        <input type="range" step=".1" min="0" max="1" ng-model="instrument.volume">
+    </div>
+</div>
+<div class="stack-horizontally sampler">
+    <div class="control-block stack-vertically">
+        <div class="input-group note-selection">
+            <span class="input-group-addon" id="basic-addon1"><span ng-hide="!instrument.currentSample" class="fa fa-volume-up"></span><span ng-hide="instrument.currentSample" class="fa fa-volume-off"></span></span>
+            <select class="no-round-left" ng-init="instrument.currentNote = instrument.params.notesList[44]" ng-model="instrument.currentNote" ng-options="note.letter + note.octave for note in instrument.notes"></select>
+        </div>
+    </div>
+</div>
+<div class="stack-horizontally sampler">
+    <div class="control-block stack-vertically">
+        <div class="sample-box">
+            <span ng-click="instrument.detachSample()" ng-hide="!instrument.currentSample" class="fa fa-close close-btn"></span>
+            <div class="sample-placeholder">
+                <select ng-hide="instrument.currentSample" ng-model="instrument.currentSample" ng-options="sample.name for sample in instrument.params.samples">
+                    <option value="" disabled="disabled">Choose sample</option>
+                </select>
+                <span ng-hide="!instrument.currentSample" class="fa fa-file-audio-o"></span>
+            </div>
+            <div class="sample-name">
+                <p>{{instrument.currentSample.name}}</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div ng-hide="!instrument.currentSample" class="stack-horizontally sampler">
+    <div class="control-block stack-vertically">
+        <span class="label">Pan</span>
+        <input type="range" min="-1" max="1" step="0.01" ng-model="instrument.pan">
+    </div>
+    <div class="control-block stack-vertically">
+        <span class="label">Volume</span>
+        <input type="range" min="0" max="1" step="0.01" ng-model="instrument.sampleGain">
+    </div>
+</div>
+<div class="stack-horizontally add-effect" add-effect></div>

@@ -1,68 +1,109 @@
 @import url(https://fonts.googleapis.com/css?family=Roboto+Slab:100,400,700);
 @import url(https://fonts.googleapis.com/css?family=Raleway:400,800);
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\000034}}
 body {
   margin: 0;
   padding: 0;
   background-color: #d6d6d6; }
 
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\000039}}
 filter {
   padding: 5px;
   float: left;
   width: 100%;
   background-color: rgba(0, 255, 0, 0.3); }
 
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\0000315}}
 master-gain {
   padding: 5px;
   float: left;
   width: 100%;
   background-color: rgba(0, 150, 150, 0.3); }
 
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\0000324}}
 .device {
   border-bottom: 1px solid #b3e2d9;
   color: #fff;
   position: relative;
   background-color: #00b2a3; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\0000325}}
   .device .device-disabled {
     background-color: #209884; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\0000331}}
   .device .device-name {
     font-family: 'Raleway';
     text-align: center;
     margin-top: 10px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\0000336}}
   .device .delete-device-icon {
     cursor: pointer;
     position: absolute;
     top: 10px;
     left: 10px;
     color: #107161; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\0000342}}
     .device .delete-device-icon:hover {
       color: #d53e7a; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\0000346}}
   .device .settings-icon {
     cursor: pointer;
     position: absolute;
     top: 10px;
     right: 10px;
     color: #fff; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\0000352}}
     .device .settings-icon:hover {
       color: #107161; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\0000356}}
   .device .toggle-device-state, .device .toggle-keyboard-input {
     font-family: "Roboto Slab"; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\0000358}}
     .device .toggle-device-state span, .device .toggle-keyboard-input span {
       font-size: 1.8em;
       position: relative;
       top: 3px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\0000364}}
   .device .toggle-keyboard-input span.fa-circle {
     color: #d53e7a; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\0000367}}
   .device .toggle-keyboard-input span.fa-circle-o {
     color: #003b4a; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\0000370}}
   .device .toggle-device-state span.fa-toggle-off {
     color: #003b4a; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\0000374}}
   .device .note-preview {
-    background-image: url("../images/notesheet-grid.png");
-    box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.4);
-    background-repeat: repeat;
-    height: 135px; }
+    height: 132px;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    padding: 0; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\0000383}}
     .device .note-preview .note-wrapper {
+      width: 2000px;
+      height: inherit;
+      background-image: url("../images/notesheet-grid.png");
+      box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.4);
+      padding: 0;
+      background-repeat: repeat-x;
       position: relative; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\0000391}}
+      .device .note-preview .note-wrapper .seeker {
+        position: absolute;
+        height: 135px;
+        width: 1px;
+        background: #fff;
+        top: 0px;
+        left: 0px;
+        z-index: 999; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\0000399}}
+        .device .note-preview .note-wrapper .seeker.transition {
+          -webkit-transition: all 10s linear;
+          -moz-transition: all 10s linear;
+          -ms-transition: all 10s linear;
+          -o-transition: all 10s linear;
+          transition: all 10s linear; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003108}}
       .device .note-preview .note-wrapper .note {
         position: absolute;
         background: #003b4a;
@@ -70,11 +111,13 @@ master-gain {
         -moz-border-radius: 5px;
         border-radius: 5px;
         width: 50px;
-        height: 15px; }
+        height: 12px; }
 
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003122}}
 .slider-outter {
   margin-top: 5px;
   margin-bottom: 5px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003125}}
   .slider-outter .slider {
     width: 100%;
     height: 25px;
@@ -85,15 +128,18 @@ master-gain {
     border-radius: 5px;
     overflow: hidden;
     position: relative; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003135}}
     .slider-outter .slider .value-bar {
       height: inherit;
       background-color: #008f83;
       padding: 2px 0px 0px 15px;
       font-family: "Raleway"; }
 
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003144}}
 .inl {
   display: inline-block; }
 
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003148}}
 input {
   background-color: #b3e2d9;
   outline: none;
@@ -105,39 +151,47 @@ input {
   color: #003b4a;
   font-family: "Roboto Slab"; }
 
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003160}}
 ::-webkit-input-placeholder {
   /* WebKit, Blink, Edge */
   color: rgba(0, 59, 74, 0.5); }
 
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003163}}
 :-moz-placeholder {
   /* Mozilla Firefox 4 to 18 */
   color: rgba(0, 59, 74, 0.5);
   opacity: 1; }
 
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003167}}
 ::-moz-placeholder {
   /* Mozilla Firefox 19+ */
   color: rgba(0, 59, 74, 0.5);
   opacity: 1; }
 
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003171}}
 :-ms-input-placeholder {
   /* Internet Explorer 10-11 */
   color: rgba(0, 59, 74, 0.5); }
 
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003175}}
 #top-bar {
   height: 70px;
   background-image: url("../images/top-bar-background.png");
   background-color: #00b2a3;
   margin-bottom: 15px;
   background-repeat: no-repeat; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003181}}
   #top-bar h1 {
     font-family: Raleway;
     font-weight: 800;
     color: #fff;
     position: relative;
     bottom: 7px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003188}}
   #top-bar .new-project {
     position: relative;
     top: 14px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003191}}
     #top-bar .new-project .plus-button {
       background-color: #fff;
       border-radius: 100%;
@@ -145,17 +199,20 @@ input {
       height: 35px;
       margin-right: 10px;
       cursor: pointer; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003198}}
       #top-bar .new-project .plus-button span {
         font-size: 2em;
         position: relative;
         top: 6px;
         left: 7px;
         color: #003b4a; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003207}}
     #top-bar .new-project .action-buttons span {
       cursor: pointer;
       color: #003b4a;
       margin-left: 5px;
       margin-right: 5px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003215}}
   #top-bar .play-button {
     width: 50px;
     height: 50px;
@@ -166,16 +223,20 @@ input {
     position: relative;
     top: 9px;
     cursor: pointer; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003225}}
     #top-bar .play-button span {
       position: relative;
-      top: 9px;
-      left: -5px;
-      font-size: 2.5em;
+      top: 12px;
+      left: -12px;
+      font-size: 2em;
       color: #fff; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003234}}
   #top-bar .bpm {
     position: relative;
-    top: 20px; }
+    top: 20px;
+    text-align: center; }
 
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003240}}
 #current-time-box, #scale-timeline-box {
   background: #0c908b;
   display: inline-block;
@@ -185,38 +246,49 @@ input {
   border-radius: 5px;
   color: #fff; }
 
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003249}}
 .devices-container {
   margin-top: 25px;
   padding-top: 15px;
   overflow: hidden; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003253}}
   .devices-container .timescale {
-    background-image: url("../images/timeline-segment.png");
-    background-repeat: repeat-x;
-    height: 12px;
-    position: relative; }
-    .devices-container .timescale .time-seeker {
-      position: absolute;
-      height: 1000px;
-      width: 1px;
-      background: #fff;
-      top: 0px;
-      left: 200px;
-      z-index: 999; }
-    .devices-container .timescale span {
-      display: inline-block;
-      position: relative;
-      bottom: 18px;
-      left: -18px;
-      margin-right: 57px; }
-    .devices-container .timescale:last-child {
-      margin-right: 0; }
+    padding-left: 0px;
+    padding-right: 0px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003257}}
+    .devices-container .timescale .timescale-wrapper-outter {
+      overflow: hidden;
+      width: 100%;
+      height: 25px;
+      position: relative; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003263}}
+      .devices-container .timescale .timescale-wrapper-outter .timescale-wrapper-inner {
+        height: inherit;
+        width: 5000px;
+        position: relative;
+        background-image: url("../images/timeline-segment.png");
+        background-repeat: repeat-x;
+        background-position: 0px bottom; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003270}}
+        .devices-container .timescale .timescale-wrapper-outter .timescale-wrapper-inner span {
+          display: inline-block;
+          position: relative;
+          bottom: 4px;
+          left: -4px;
+          margin-right: 57px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003278}}
+        .devices-container .timescale .timescale-wrapper-outter .timescale-wrapper-inner:last-child {
+          margin-right: 0; }
 
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003286}}
 .add-new-device-container {
   margin-top: 100px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003288}}
   .add-new-device-container .add-new-device {
     width: 400px;
     height: 130px;
     background-color: #3bc2b5; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003292}}
     .add-new-device-container .add-new-device .big-plus-button {
       width: 165px;
       height: 130px;
@@ -225,6 +297,7 @@ input {
       background-repeat: no-repeat;
       background-position: center;
       background-color: #0c908b; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003300}}
       .add-new-device-container .add-new-device .big-plus-button::after {
         content: '\f067 ';
         font-family: FontAwesome;
@@ -233,18 +306,22 @@ input {
         top: 8px;
         left: 62px;
         color: #fff; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003310}}
     .add-new-device-container .add-new-device .instrument-list {
       display: inline-block;
       overflow: auto;
       height: inherit;
       width: 230px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003315}}
       .add-new-device-container .add-new-device .instrument-list::-webkit-scrollbar {
         width: 12px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003319}}
       .add-new-device-container .add-new-device .instrument-list::-webkit-scrollbar-track {
         background-color: #00b2a3;
         -webkit-border-radius: 2px;
         -moz-border-radius: 2px;
         border-radius: 2px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003326}}
       .add-new-device-container .add-new-device .instrument-list::-webkit-scrollbar-thumb {
         background-color: #244c5a;
         -webkit-border-radius: 2px;
@@ -254,19 +331,23 @@ input {
         background-repeat: no-repeat;
         background-position: center;
         background-size: 8px 8px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003336}}
       .add-new-device-container .add-new-device .instrument-list ul {
         height: inherit;
         list-style-type: none;
         padding-top: 5px;
         padding-left: 25px;
         margin: 0; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003342}}
         .add-new-device-container .add-new-device .instrument-list ul li {
           cursor: pointer;
           font-family: "Roboto Slab";
           font-weight: bold; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003346}}
           .add-new-device-container .add-new-device .instrument-list ul li:hover {
             color: #e8404c; }
 
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003354}}
 #instrument-settings {
   background: #003b4a;
   color: #fff;
@@ -277,21 +358,25 @@ input {
   z-index: 1000;
   border-top-left-radius: 15px;
   border-top-right-radius: 15px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003364}}
   #instrument-settings .settings-keyboard {
     position: relative;
     width: 99.2%;
     height: 100px;
     margin: 0px auto;
     overflow: hidden; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003370}}
     #instrument-settings .settings-keyboard .keyboard {
       position: absolute;
       bottom: 0px;
       left: 0px;
       width: 200%;
       height: inherit; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003376}}
       #instrument-settings .settings-keyboard .keyboard ul {
         margin: 0;
         padding: 0; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003380}}
       #instrument-settings .settings-keyboard .keyboard .key {
         display: inline-block;
         position: relative;
@@ -299,6 +384,7 @@ input {
         height: 100px;
         border-right: 1px solid #008f83;
         cursor: pointer; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003388}}
         #instrument-settings .settings-keyboard .keyboard .key span {
           color: #000;
           position: absolute;
@@ -306,14 +392,19 @@ input {
           left: 5px;
           font-family: Raleway;
           font-weight: 100; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003397}}
       #instrument-settings .settings-keyboard .keyboard .black {
         background-color: #000; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003399}}
         #instrument-settings .settings-keyboard .keyboard .black.active {
           background-color: #1a7370; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003403}}
       #instrument-settings .settings-keyboard .keyboard .white {
         background-color: #fff; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003405}}
         #instrument-settings .settings-keyboard .keyboard .white.active {
           background-color: #3bc2b5; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003413}}
   #instrument-settings .instrument-control-wrapper select {
     border: none;
     -webkit-border-radius: 5px;
@@ -324,19 +415,29 @@ input {
     color: #003b4a;
     font-family: "Roboto Slab";
     overflow: hidden; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003424}}
+    #instrument-settings .instrument-control-wrapper select.no-round-left {
+      border-top-right-radius: 5px;
+      border-bottom-right-radius: 5px;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003431}}
   #instrument-settings .instrument-control-wrapper .instrument-control-outer-wrapper {
     overflow-x: auto;
     overflow-y: hidden;
     white-space: nowrap;
     width: 100%;
     margin-bottom: 20px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003437}}
     #instrument-settings .instrument-control-wrapper .instrument-control-outer-wrapper::-webkit-scrollbar {
       width: 10px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003441}}
     #instrument-settings .instrument-control-wrapper .instrument-control-outer-wrapper::-webkit-scrollbar-track {
       background-color: #00b2a3;
       -webkit-border-radius: 5px;
       -moz-border-radius: 5px;
       border-radius: 5px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003449}}
     #instrument-settings .instrument-control-wrapper .instrument-control-outer-wrapper::-webkit-scrollbar-thumb {
       background-color: #244c5a;
       -webkit-border-radius: 5px;
@@ -346,29 +447,35 @@ input {
       background-repeat: no-repeat;
       background-position: center;
       background-size: auto 12px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003460}}
   #instrument-settings .instrument-control-wrapper .stack-vertically {
     display: block; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003463}}
   #instrument-settings .instrument-control-wrapper .stack-horizontally {
     display: inline-block;
     margin-right: 30px;
     position: relative; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003468}}
   #instrument-settings .instrument-control-wrapper .effect {
     background-color: rgba(0, 0, 0, 0.1);
     padding: 10px;
     -webkit-border-radius: 10px;
     -moz-border-radius: 10px;
     border-radius: 10px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003474}}
     #instrument-settings .instrument-control-wrapper .effect .close {
       color: white;
       cursor: pointer;
       position: absolute;
       top: 5px;
       right: 5px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003482}}
   #instrument-settings .instrument-control-wrapper .add-effect {
     width: 250px;
     height: 75px;
     position: relative;
     bottom: 45px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003487}}
     #instrument-settings .instrument-control-wrapper .add-effect .effect-list {
       display: inline-block;
       width: 150px;
@@ -377,13 +484,16 @@ input {
       position: relative;
       right: 4px;
       overflow: auto; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003495}}
       #instrument-settings .instrument-control-wrapper .add-effect .effect-list::-webkit-scrollbar {
         width: 10px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003499}}
       #instrument-settings .instrument-control-wrapper .add-effect .effect-list::-webkit-scrollbar-track {
         background-color: #00b2a3;
         -webkit-border-radius: 2px;
         -moz-border-radius: 2px;
         border-radius: 2px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003505}}
       #instrument-settings .instrument-control-wrapper .add-effect .effect-list::-webkit-scrollbar-thumb {
         background-color: #244c5a;
         -webkit-border-radius: 2px;
@@ -393,18 +503,22 @@ input {
         background-repeat: no-repeat;
         background-position: center;
         background-size: 8px 8px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003515}}
       #instrument-settings .instrument-control-wrapper .add-effect .effect-list ul {
         height: inherit;
         list-style-type: none;
         padding-top: 5px;
         padding-left: 25px;
         margin: 0; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003521}}
         #instrument-settings .instrument-control-wrapper .add-effect .effect-list ul li {
           cursor: pointer;
           font-family: "Roboto Slab";
           font-weight: bold; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003525}}
           #instrument-settings .instrument-control-wrapper .add-effect .effect-list ul li:hover {
             color: #e8404c; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003531}}
     #instrument-settings .instrument-control-wrapper .add-effect .big-plus-icon {
       width: 95px;
       height: inherit;
@@ -412,8 +526,10 @@ input {
       position: relative;
       cursor: pointer;
       display: inline-block; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003538}}
       #instrument-settings .instrument-control-wrapper .add-effect .big-plus-icon:hover {
         background-color: #25787b; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003541}}
       #instrument-settings .instrument-control-wrapper .add-effect .big-plus-icon::after {
         content: '\f067 ';
         font-family: FontAwesome;
@@ -421,50 +537,62 @@ input {
         font-size: 3.5em;
         top: 4px;
         left: 29px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003552}}
   #instrument-settings .instrument-control-wrapper .control-block {
     margin-bottom: 25px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003554}}
     #instrument-settings .instrument-control-wrapper .control-block .label {
       display: block;
       font-size: 1em;
       text-align: center;
       margin-bottom: 10px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003563}}
   #instrument-settings .close-button {
     position: absolute;
     top: 4px;
     right: 10px;
     cursor: pointer;
     z-index: 10; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003568}}
     #instrument-settings .close-button:before {
       content: '\f0ab';
       font-family: FontAwesome;
       color: #d53e7a;
       font-size: 1.5em; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003576}}
   #instrument-settings .top-line {
     position: relative;
     margin-top: 15px;
     margin-left: 25px;
     margin-bottom: 30px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003581}}
     #instrument-settings .top-line * {
       display: inline-block; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003585}}
     #instrument-settings .top-line .device-name-bar .device-name {
       font-family: "Raleway";
       font-size: 1.6em; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003590}}
     #instrument-settings .top-line input {
       margin-left: 5px;
       margin-right: 5px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003594}}
     #instrument-settings .top-line select {
       background: #003b4a;
       outline: none;
       border: none; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003599}}
     #instrument-settings .top-line .midi-control-bar {
       margin-left: 20px;
       font-family: Raleway;
       font-size: 1.2em; }
 
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003609}}
 .visualizer {
   width: 500px;
   height: 250px; }
 
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003613}}
 .footer {
   position: fixed;
   bottom: 0px;
@@ -472,12 +600,15 @@ input {
   background-position: -40px 30px;
   background-color: #00b2a3;
   width: 100%; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003620}}
   .footer span {
     float: right;
     margin-right: 10px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003624}}
   .footer a {
     color: #ffffff; }
 
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003628}}
 .x {
   position: absolute;
   z-index: 9999;
@@ -486,10 +617,102 @@ input {
   overflow: hidden;
   width: 877px;
   height: 407px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003636}}
   .x img {
     width: 120%;
     position: relative;
     bottom: 111px;
     left: -169px; }
+
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003643}}
+.scroll-bar {
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 17px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003647}}
+  .scroll-bar::-webkit-scrollbar {
+    width: 10px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003651}}
+  .scroll-bar::-webkit-scrollbar-track {
+    background-color: #00b2a3;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003659}}
+  .scroll-bar::-webkit-scrollbar-thumb {
+    background-color: #244c5a;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    background-image: url("../images/scrollbaricon.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: auto 12px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003669}}
+  .scroll-bar .scroll-bar-wrapper {
+    width: 2000px; }
+
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003676}}
+.sampler .note-selection {
+  width: 110px;
+  position: relative;
+  bottom: 65px;
+  left: 21px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003681}}
+  .sampler .note-selection span span {
+    font-size: 2em; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003685}}
+  .sampler .note-selection select {
+    font-size: 2em; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003689}}
+.sampler .sample-box {
+  width: 150px;
+  height: 150px;
+  background-color: #ffffff;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003696}}
+  .sampler .sample-box .close-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    color: #0f0f0f;
+    font-size: 1.3em;
+    cursor: pointer; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003704}}
+  .sampler .sample-box .sample-placeholder {
+    position: absolute;
+    top: 21px;
+    left: 46px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003708}}
+    .sampler .sample-box .sample-placeholder select {
+      position: absolute;
+      left: -35px;
+      top: 35px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003713}}
+    .sampler .sample-box .sample-placeholder span {
+      font-size: 5em;
+      color: #d53e7a; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003718}}
+  .sampler .sample-box .sample-name {
+    position: absolute;
+    bottom: 25px;
+    padding: 5px; }
+@media -sass-debug-info{filename{font-family:file\:\/\/C\:\/Users\/12059_000\/Documents\/honours\/web-daw\/public\/assets\/stylesheets\/stylesheet\.scss}line{font-family:\00003724}}
+    .sampler .sample-box .sample-name p {
+      color: #000;
+      width: 150px;
+      height: 31px;
+      text-align: center;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      -ms-word-break: break-all;
+      word-break: break-all;
+      word-break: break-word;
+      -ms-hyphens: auto;
+      -moz-hyphens: auto;
+      -webkit-hyphens: auto;
+      hyphens: auto; }
 
 /*# sourceMappingURL=stylesheet.css.map */

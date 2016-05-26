@@ -3,16 +3,21 @@
  */
 // Initialize application
 // Loads modules
-angular.module('waw', [ 'Devices', 'Instruments', 'keyboard', 'midiHandler']).
+angular.module('waw', [ 'Devices', 'Instruments', 'keyboard', 'midiHandler', 'Sequencer']).
     /*
     controller  : mainController
     description : It just sits there and provides $scope to child controllers
  */
-controller('mainController',['$scope', function($scope){
-    $scope.play = function (){
-        $scope.xhide = !$scope.xhide;
+controller('mainController',['$scope','schedulerService', function($scope, schedulerService){
+    $scope.schedulerParams = schedulerService.params;
+    var pad = function(n, width, z) {
+        z = z || '0';
+        n = n + '';
+        return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
     }
-    $scope.xhide = true;
+    $scope.$watch("schedulerParams.currentTime", function(n){
+        $scope.currentTime = pad(String(Math.round(n/60)),2) + ":" + pad(String(n).split(".")[0],2) + ":" + pad(String(Math.round(n*1000%1000)),3);
+    });
 }])
 /*
     factory : audioCtx
@@ -49,6 +54,11 @@ controller('mainController',['$scope', function($scope){
     // return node
     return mGain;
 })
+
+
+.service('tunaEffectsService', ['audioCtx',function (audioCtx) {
+    this.tuna = new Tuna(audioCtx);
+}])
     /*
     service : utilitiesService
     desc    : Miscellaneous utility functions for example
@@ -87,11 +97,114 @@ angular.module('Devices', ['Instruments']).
                   This feature not fully implemented. Only for presentation.
 
      */
-directive('notesPreview', [function(){
+directive('notesPreview', ['schedulerService','$timeout',function(schedulerService, $timeout){
     return {
         restrict : "A",
-        require : "^device",
-        template : ''
+        scope: true,
+        link : function($scope, $element){
+
+        },
+        controller : function($scope) {
+            var notes = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+            //console.log(notes);
+            $scope.schedulerParams = schedulerService.params;
+            $scope.$watch("schedulerParams.BPM", function(n){
+               //console.log(n);
+            });
+            $scope.noteCoordinates;
+            $scope.$watchGroup(["device.notes", "schedulerParams.BPM"], function(n){
+                if ( $scope.device.notes ) {
+                    //console.log(n);
+                    var noteCoordinates = [];
+                    var hiLoNotes = {
+                        highest: {
+                            index: -1,
+                            octave: -1,
+                            value: 0
+                        },
+                        lowest: {
+                            index: 11,
+                            octave: 20,
+                            value: 99999
+                        }
+                    };
+                    $scope.device.notes.forEach(function (note) {
+                        var letter;
+                        var octave;
+                        var value;
+                        if (note.length === 3) {
+                            letter = note.note.substr(0, 1);
+                            octave = parseInt(note.note.charAt(2));
+                        } else {
+                            letter = note.note.charAt(0);
+                            octave = parseInt(note.note.charAt(1));
+                        }
+                        value = ((notes.indexOf(letter) + 1) * 10) + (1000 * octave );
+                        if (
+                            value > hiLoNotes.highest.value
+                        ) {
+                            hiLoNotes.highest.index = notes.indexOf(letter);
+                            hiLoNotes.highest.octave = octave;
+                            hiLoNotes.highest.value = value;
+                        }
+                        if (
+                            hiLoNotes.lowest.value > value
+                        ) {
+                            hiLoNotes.lowest.index = notes.indexOf(letter);
+                            hiLoNotes.lowest.octave = octave;
+                            hiLoNotes.lowest.value = value;
+                        }
+                    });
+                    var range = function () {
+                        var range = 0;
+                        var diff = (hiLoNotes.highest.octave - hiLoNotes.lowest.octave);
+                        //console.log("Diff:",hiLoNotes);
+                        for (var i = 0; i < diff; i++) {
+                            range += notes.length - (hiLoNotes.lowest.index + 1);
+                            if (diff <= 1) {
+                                range += hiLoNotes.highest.index + 1;
+                            } else {
+                                range += 12
+                            }
+                        }
+                        return range;
+                    };
+                    $scope.device.notes.forEach(function (note) {
+                        var timings = schedulerService.calculateNoteTiming(note);
+                        var letter;
+                        var octave;
+                        if (note.note.length === 3) {
+                            letter = note.note.substr(0, 2);
+                            octave = note.note.charAt(2);
+                        } else {
+                            letter = note.note.charAt(0);
+                            octave = note.note.charAt(1);
+                        }
+
+                        //value = ((notes.indexOf(letter)+1)*10) + (1000 * octave );
+                        //console.log(range(), value, letter);
+                        var position = 0;
+                        if (octave == hiLoNotes.lowest.octave) {
+                            position += notes.indexOf(letter) + 1;
+                        } else if (octave == hiLoNotes.highest.octave) {
+                            position += (11 * (hiLoNotes.highest.octave - hiLoNotes.lowest.octave)) + notes.indexOf(letter) + 1
+                        }
+                        var x = timings.time.start * 80;
+                        var y = 132 - position * (132 / range());
+                        var w = (timings.time.end - timings.time.start) * 80;
+                        var h = 132 / range();
+                        noteCoordinates.push({
+                            x: x,
+                            y: y,
+                            w: w,
+                            h: h
+                        });
+                    });
+                    $scope.noteCoordinates = noteCoordinates;
+                }
+            });
+        },
+        templateUrl : 'app/components/device/notes-preview.html'
     }
 }]).
     /*
@@ -245,7 +358,7 @@ directive('toggleDeviceState', ['$compile', function($compile){
                   is clicked new device gets created
     return      :
      */
-.directive('addNewDevice', ['InstrumentsService','$compile','utilitiesService',function (InstrumentsService, $compile,utilitiesService) {
+.directive('addNewDevice', ['InstrumentsService','$compile','utilitiesService','$rootScope',function (InstrumentsService, $compile,utilitiesService, $rootScope) {
     return {
         restrict    : "A",
         scope       : true,
@@ -256,10 +369,12 @@ directive('toggleDeviceState', ['$compile', function($compile){
             $scope.addDevice = function (i) {
                 // Generate unique id for our new device
                 var id = utilitiesService.uniqueId();
+                var last = document.querySelectorAll(".row.device");
+                last = last[last.length-1];
                 // compile element so device directive can process it further
                 var el = $compile('<div class="device row" device identification="' + id + '" enabled="true" instrument="' + i.id + '"></div>')($scope.$new());
                 // Attach newly compiled element to the end of devices list
-                angular.element(document.querySelector('.devices-container')).append(el);
+                angular.element(last).after(el);
             }
         },
         templateUrl : "app/components/device/addNewDevice.html"
@@ -274,7 +389,7 @@ directive('toggleDeviceState', ['$compile', function($compile){
                      - settings: displays full range of settings for present device
 
  */
-.directive('device', function ($compile, devicesService, InstrumentsService, masterGain,$rootScope) {
+.directive('device', function ($compile, devicesService, InstrumentsService, masterGain,$rootScope, schedulerService) {
     return {
         restrict : "A",
         // Assign attributes to scope
@@ -282,7 +397,8 @@ directive('toggleDeviceState', ['$compile', function($compile){
             instrument_name : '@instrument',
             identification : '@',
             enabled : '=',
-            type : '@device'
+            type : '@device',
+            notes : '='
         },
 
         link : function ($scope, $el){
@@ -295,12 +411,14 @@ directive('toggleDeviceState', ['$compile', function($compile){
                 // Close settings box in case it is open
                 $scope.closeSettings();
             };
+
         },
         controller : function ( $scope) {
             var vm = $scope;
             // Create child scope for settings box
             var childScope = null;
             // handle click event for close settings box
+            var settingz = false;
             $scope.closeSettings = function () {
                 // Let other components ,such as effects or instruments, know that settings box is being closed
                 $rootScope.$emit('closingSettings');
@@ -308,9 +426,12 @@ directive('toggleDeviceState', ['$compile', function($compile){
                 var settings = angular.element( document.querySelector('#instrument-settings'));
                 // Clear contents of a settings box
                 settings.empty();
+                settingz = false;
             };
             // handle click event for opening settings box
+
             $scope.openSettings = function(){
+                settingz = true;
                 // find settings box
                 var settings = angular.element( document.querySelector('div#instrument-settings'));
                 // Clear contents of a settings box in case there is one open
@@ -326,12 +447,6 @@ directive('toggleDeviceState', ['$compile', function($compile){
                 // Attach to DOM newly compiled element
                 settings.append(el);
             };
-            // Initial parameters for a device
-            vm.params = {
-                // Volume of a device
-                gain : 0.2,
-                enabled : vm.enabled
-            };
 
             // Initialize device object for data binding
 
@@ -346,12 +461,18 @@ directive('toggleDeviceState', ['$compile', function($compile){
                 // Route instrument's output to device's gain node
                 vm.device.instrument_instance.output = vm.device.gainNode;
                 // Assign a name of present device to instrument for debugging purposes
-                vm.device.instrument_instance.devname = vm.identification;
+                vm.device.instrument_instance.devname = vm.device._id;
             } else { // Type is set, so we are dealing with settings box
                 // get existing device and set it to this scope
                 vm.device = devicesService.get(vm.identification);
             }
 
+            // Initial parameters for a device
+            vm.params = {
+                // Volume of a device
+                gain : (vm.type == "")? 0.2 : vm.device.gainNode.gain.value,
+                enabled : (vm.type == "") ? vm.enabled:vm.device.enabled
+            };
             // Set device state
             vm.device.enabled = vm.params.enabled;
 
@@ -363,7 +484,11 @@ directive('toggleDeviceState', ['$compile', function($compile){
             // watch for volume changes
             vm.$watch('params.gain', function(val) {
                 if ( !isNaN(val) ) {
-                    vm.device.gainNode.gain.value = val;
+                    if ( vm.device.enabled ) {
+                        vm.device.gainNode.gain.value = val;
+                    } else {
+                        vm.device.gainNode.gain.value = 0;
+                    }
                 } else {
                     console.log("nan");
                 }
@@ -378,10 +503,17 @@ directive('toggleDeviceState', ['$compile', function($compile){
 
             // Toggle device state. Enable/Disable
 
+
+
             vm.toggleEnabled = function (nonDirective) {
                 if (!nonDirective) vm.device.enabled = !vm.device.enabled;
+                if ( !vm.device.enabled ) {
+                    vm.device.gainNode.gain.value = 0;
+                } else {
+                    vm.device.gainNode.gain.value = vm.params.gain;
+                }
+
                 vm.$apply();
-                console.log(vm.device.enabled);
             };
 
             // Toggle note input. Enable/Disable
@@ -396,219 +528,186 @@ directive('toggleDeviceState', ['$compile', function($compile){
                 }
             };
             // Random number generator
-            //function randomNumber(min, max, incl) {
-            //    incl = (incl) ? 1 : 0;
-            //    return Math.floor(Math.random() * ( max - min + incl )) + min;
-            //}
-
-            //if ( vm.device.name ==  "sine synth") {
-            //    vm.device.notes = [
-            //        { // 1/8 G , 1st bar beginning , 1st quarter note beginning
-            //            target  : instance,
-            //            start   : "0.0.0",
-            //            end     : "0.1.0",
-            //            note    : "G2",
-            //            velocity: parseFloat("0." + randomNumber(3,9)) // Velocity indicated note volume
-            //        },
-            //        {// 1/8 G
-            //            target  : instance,
-            //            start   : "0.2.0",
-            //            end     : "0.3.0",
-            //            note    : "G2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/8 E    2nd quarter note. 1/8+1/8 = 1/4
-            //            target  : instance,
-            //            start   : "0.0.1",
-            //            end     : "0.1.1",
-            //            note    : "E2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/8 C
-            //            target  : instance,
-            //            start   : "0.2.1",
-            //            end     : "0.3.1",
-            //            note    : "C2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/8 G
-            //            target  : instance,
-            //            start   : "0.0.2",
-            //            end     : "0.1.2",
-            //            note    : "G2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/8 G
-            //            target  : instance,
-            //            start   : "0.2.2",
-            //            end     : "0.3.2",
-            //            note    : "G2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/8 E
-            //            target  : instance,
-            //            start   : "0.0.3",
-            //            end     : "0.1.3",
-            //            note    : "E2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/8 C
-            //            target  : instance,
-            //            start   : "0.2.3",
-            //            end     : "0.3.3",
-            //            note    : "C2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/8 F   2nd bar beginning
-            //            target  : instance,
-            //            start   : "1.0.0",
-            //            end     : "1.1.0",
-            //            note    : "F2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/8 A
-            //            target  : instance,
-            //            start   : "1.2.0",
-            //            end     : "1.3.0",
-            //            note    : "A2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/8 C
-            //            target  : instance,
-            //            start   : "1.0.1",
-            //            end     : "1.1.1",
-            //            note    : "C3",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/8 A
-            //            target  : instance,
-            //            start   : "1.2.1",
-            //            end     : "1.3.1",
-            //            note    : "A2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/4 G
-            //            target  : instance,
-            //            start   : "1.0.2",
-            //            end     : "1.3.2",
-            //            note    : "G2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        },
-            //        {// 1/4 G
-            //            target  : instance,
-            //            start   : "1.0.3",
-            //            end     : "1.3.3",
-            //            note    : "G2",
-            //            velocity: parseFloat("0." + randomNumber(3,9))
-            //        }];
-            //} else if ( vm.device.name == "square synth" ) {
-            //    vm.device.notes = [
-            //        { // 1/8 G , 1st bar beginning , 1st quarter note beginning
-            //            target  : instance,
-            //            start   : "0.0.0",
-            //            end     : "0.0.1",
-            //            note    : "G4",
-            //            velocity: 1  // Velocity indicated note volume
-            //        },
-            //        {// 1/8 G
-            //            target  : instance,
-            //            start   : "0.0.1",
-            //            end     : "0.1.0",
-            //            note    : "G4",
-            //            velocity: 1
-            //        },
-            //        {// 1/8 E    2nd quarter note. 1/8+1/8 = 1/4
-            //            target  : instance,
-            //            start   : "0.1.0",
-            //            end     : "0.1.1",
-            //            note    : "E4",
-            //            velocity: 1
-            //        },
-            //        {// 1/8 C
-            //            target  : instance,
-            //            start   : "0.1.1",
-            //            end     : "0.2.0",
-            //            note    : "C4",
-            //            velocity: 1
-            //        },
-            //        {// 1/8 G
-            //            target  : instance,
-            //            start   : "0.2.0",
-            //            end     : "0.2.1",
-            //            note    : "G4",
-            //            velocity: 1
-            //        },
-            //        {// 1/8 G
-            //            target  : instance,
-            //            start   : "0.2.1",
-            //            end     : "0.3.0",
-            //            note    : "G4",
-            //            velocity: 1
-            //        },
-            //        {// 1/8 E
-            //            target  : instance,
-            //            start   : "0.3.0",
-            //            end     : "0.3.1",
-            //            note    : "E4",
-            //            velocity: 1
-            //        },
-            //        {// 1/8 C
-            //            target  : instance,
-            //            start   : "0.3.1",
-            //            end     : "1.0.0",
-            //            note    : "C4",
-            //            velocity: 1
-            //        },
-            //        {// 1/8 F   2nd bar beginning
-            //            target  : instance,
-            //            start   : "1.0.0",
-            //            end     : "1.0.1",
-            //            note    : "F4",
-            //            velocity: 1
-            //        },
-            //        {// 1/8 A
-            //            target  : instance,
-            //            start   : "1.0.1",
-            //            end     : "1.1.0",
-            //            note    : "A4",
-            //            velocity: 1
-            //        },
-            //        {// 1/8 C
-            //            target  : instance,
-            //            start   : "1.1.0",
-            //            end     : "1.1.1",
-            //            note    : "C5",
-            //            velocity: 1
-            //        },
-            //        {// 1/8 A
-            //            target  : instance,
-            //            start   : "1.1.1",
-            //            end     : "1.2.0",
-            //            note    : "A4",
-            //            velocity: 1
-            //        },
-            //        {// 1/4 G
-            //            target  : instance,
-            //            start   : "1.2.0",
-            //            end     : "1.3.0",
-            //            note    : "G4",
-            //            velocity: 1
-            //        },
-            //        {// 1/4 G
-            //            target  : instance,
-            //            start   : "1.3.0",
-            //            end     : "2.0.0",
-            //            note    : "G4",
-            //            velocity: 1
-            //        }];
-            //}
+            function randomNumber(min, max, incl) {
+                incl = (incl) ? 1 : 0;
+                return Math.floor(Math.random() * ( max - min + incl )) + min;
+            }
+            var instance = vm.device;
+            if ( vm.notes == "1") {
+                vm.device.notes = [
+                    { // 1/8 G , 1st bar beginning , 1st quarter note beginning
+                        target: instance,
+                        start: "0.0.0",
+                        end: "0.0.1",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true) // Velocity indicates note volume
+                    },
+                    {// 1/8 G
+                        target: instance,
+                        start: "0.0.1",
+                        end: "0.0.2",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 E    2nd quarter note. 1/8+1/8 = 1/4
+                        target: instance,
+                        start: "0.1.0",
+                        end: "0.1.1",
+                        note: "E2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 C
+                        target: instance,
+                        start: "0.1.1",
+                        end: "0.1.2",
+                        note: "C2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 G
+                        target: instance,
+                        start: "0.2.0",
+                        end: "0.2.1",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 G
+                        target: instance,
+                        start: "0.2.1",
+                        end: "0.2.2",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 E
+                        target: instance,
+                        start: "0.3.0",
+                        end: "0.3.1",
+                        note: "E2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 C
+                        target: instance,
+                        start: "0.3.1",
+                        end: "0.3.2",
+                        note: "C2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 F   2nd bar beginning
+                        target: instance,
+                        start: "1.0.0",
+                        end: "1.0.1",
+                        note: "F2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 A
+                        target: instance,
+                        start: "1.0.1",
+                        end: "1.0.2",
+                        note: "A2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 C
+                        target: instance,
+                        start: "1.1.0",
+                        end: "1.1.1",
+                        note: "C3",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 A
+                        target: instance,
+                        start: "1.1.1",
+                        end: "1.1.2",
+                        note: "A2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/4 G
+                        target: instance,
+                        start: "1.2.0",
+                        end: "1.2.2",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/4 G
+                        target: instance,
+                        start: "1.3.0",
+                        end: "1.3.2",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true)
+                    }];
+            } else if ( vm.notes == "2" ) {
+                vm.device.notes = [
+                    { // 1/8 G , 1st bar beginning , 1st quarter note beginning
+                        target: instance,
+                        start: "0.0.0",
+                        end: "0.0.1",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true) // Velocity indicates note volume
+                    },
+                    {// 1/8 G
+                        target: instance,
+                        start: "0.0.1",
+                        end: "0.0.2",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 G
+                        target: instance,
+                        start: "0.2.0",
+                        end: "0.2.1",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 G
+                        target: instance,
+                        start: "0.2.1",
+                        end: "0.2.2",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/8 E
+                        target: instance,
+                        start: "0.3.0",
+                        end: "0.3.1",
+                        note: "E2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/4 G
+                        target: instance,
+                        start: "1.2.0",
+                        end: "1.2.2",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true)
+                    },
+                    {// 1/4 G
+                        target: instance,
+                        start: "1.3.0",
+                        end: "1.3.2",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true)
+                    }];
+            } else if ( vm.notes == "3" ) {
+                vm.device.notes = [
+                    { // 1/8 G , 1st bar beginning , 1st quarter note beginning
+                        target: instance,
+                        start: "0.0.0",
+                        end: "0.0.1",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true) // Velocity indicates note volume
+                    },
+                    {// 1/8 G
+                        target: instance,
+                        start: "0.0.1",
+                        end: "0.0.2",
+                        note: "G2",
+                        velocity: randomNumber(60, 127, true)
+                    }];
+            }
             this.scope = vm;
         },
         templateUrl : function (e, a){
                 if ( a.device == "" ) {
                     return 'app/components/device/view.html';
                 } else {
-                    return'app/components/device/device-settings.html'
+                    return 'app/components/device/device-settings.html'
                 }
             }
         }
@@ -747,13 +846,13 @@ Effects module
 desc    : responsible for creating new instances of effect classes
           Effect routing etc.
  */
-angular.module('Effects', ['filterEffect', 'visualizationEffect', 'reverbEffect']).
+angular.module('Effects', ['filterEffect', 'visualizationEffect', 'reverbEffect','chorusTunaEffect']).
     /*
 factory : effectsService
 desc    : Contains functionality to load an effect, performs effect audio routing
           and hold a list of available effects
  */
-factory('effectsService',['filter', 'visualization', 'reverb', function(f, viz, reverb){
+factory('effectsService',['filter', 'visualization', 'reverb','chorusTuna', function(f, viz, reverb,chorusTuna){
     var effectsList = [
         {
             name    : 'Filter',
@@ -769,6 +868,12 @@ factory('effectsService',['filter', 'visualization', 'reverb', function(f, viz, 
             name    : 'Reverb',
             id      : 'reverb',
             effect  : reverb
+        }
+        ,
+        {
+            name    : 'Chorus - Tuna',
+            id      : 'chorus',
+            effect  : chorusTuna
         }
     ];
     /*
@@ -937,7 +1042,7 @@ factory('effectsService',['filter', 'visualization', 'reverb', function(f, viz, 
 /**
  * Created by Haroldas Latonas on 4/10/2016.
  */
-angular.module('Instruments',[ 'simpleSynth', 'Effects'])
+angular.module('Instruments',[ 'simpleSynth', 'simple_sampler', 'Effects'])
     /*
     directive   : instrumentControl
     desc        : Displays partial-view for particular instrument settings user interface
@@ -948,23 +1053,24 @@ angular.module('Instruments',[ 'simpleSynth', 'Effects'])
         scope : true,
         link : function ($scope, $element) {
             // Get template depending on instrument
+            if ( !$scope.device.instrument_instance.id ) return;
+
             $scope.getTemplate = function () {
+                if (!$scope.device.instrument_instance) return;
                 return 'app/components/instruments/' + $scope.device.instrument_instance.id + '/view.html'
             };
             // Look up if device contains any sound effects
             if ( $scope.device.effects_chain.length > 0 ) {
                 // Wait until DOM is ready
                 $timeout(function(){
-                    var childScope;
                     // Flip array of effects
                     $scope.device.effects_chain.reverse();
                     // Scan through list of effects
                     $scope.device.effects_chain.forEach(function( e, i ){
-                        childScope = $scope.$new();
                         //$el[0].querySelector('.effect-list ul li[data-id=' + e.id + ']').remove();
                         // For each effect create control user interface
                         var es = document.querySelector('.instrument-control-wrapper .instrument-control-outer-wrapper .stack-horizontally:nth-last-child(2)');
-                        var block = $compile('<div class="stack-horizontally effect" effect-control="' + e.id + '" reinitialize="true" sequence-number="' + i + '"></div>')(childScope);
+                        var block = $compile('<div class="stack-horizontally effect" effect-control="' + e.id + '" reinitialize="true" sequence-number="' + i + '"></div>')($scope);
                         angular.element(es).after(block);
                     });
                 },500);
@@ -974,6 +1080,7 @@ angular.module('Instruments',[ 'simpleSynth', 'Effects'])
         controller : function ($scope) {
             // Send current instruments logic to view
             $scope.instrument = $scope.device.instrument_instance;
+
         },
         template : '<div class="instrument-control-outer-wrapper" ng-include="getTemplate()"></div>'
     };
@@ -986,15 +1093,21 @@ angular.module('Instruments',[ 'simpleSynth', 'Effects'])
     service :InstrumentsService
     desc    : Service holds a list of available instruments and function to get a new instance of an instrument
      */
-service('InstrumentsService', [ 'simpleSynth', function( simpleSynth){
+service('InstrumentsService', [ 'simpleSynth', 'simpleSampler', function( simpleSynth, simpleSampler){
 
     this.availableInstruments = [
         {
             id : "simple_synth",
             name : "Simple Synthesizer",
             instrument : simpleSynth
+        },
+        {
+            id : "simple_sampler",
+            name : "Simple Sampler",
+            instrument : simpleSampler
         }
     ];
+    //console.log(this.availableInstruments);
     /*
         desc    : creates new instance of an instrument class
         arg     : id - String representing id of an instrument
@@ -1061,7 +1174,7 @@ desc        : Directive displays keyboard. When key is clicked controller sends 
                 // Find a device which is using keyboard
                 var device = keyboardHelperService.getKeyboardUser();
                 // Send note signal to instrument associated with that device
-                device.instrument_instance.play(freq, device._id);
+                device.instrument_instance.play(freq, null);
             };
             vm.keyUp = function (note, freq) {
                 var device = keyboardHelperService.getKeyboardUser();
@@ -1164,18 +1277,35 @@ desc    : Handles midi device connections. Keeps track of midi devices and their
         // Get promise
         var access = requestMIDIAccess.requestAccess();
         // Initiate promise
+        var inputs = [];
+        var outputs = [];
         access.then(function (access){
             // If successful
             // Scan through all devices and add them to a list
+
             access.inputs.forEach(function ( i ) {
+                inputs.push(i);
+            });
+            access.outputs.forEach(function( o ){
+                outputs.push(o);
+            });
+            for ( var p = 0 ; p < inputs.length ; p++ ) {
                 devices.push({
                     user : null,
-                    midi : i
+                    midi : {
+                        input : inputs[p],
+                        output: outputs[p]
+                    }
                 });
-            });
+            }
             service.devices = devices;
         });
     };
+
+    var calcFreq = function (MIDINote) {
+      return (440 * Math.pow(2, (MIDINote - 69) / 12))
+    };
+
     // Callback for midi message
     var onMessage = function (e, user) {
         // Debugging
@@ -1183,13 +1313,24 @@ desc    : Handles midi device connections. Keeps track of midi devices and their
         service.val2 = e.data[2];
         service.val = e.data[0];
         // Key down event
-        if ( e.data[0] == 144 ) {
+        //console.log(e.data[0], e.data[1], e.data[2]);
+        if ( e.data[0] == 144 && e.data[2] > 0 ) {
             // Send note signal to device
-            user.instrument_instance.play((440 * Math.pow(2, (e.data[1] - 69) / 12)), user._id);
-        } else if ( e.data[0] == 128 ) { // Key up event
-            user.instrument_instance.stop((440 * Math.pow(2, (e.data[1] - 69) / 12)));
+            user.instrument_instance.play(calcFreq(e.data[1]), null, e.data[2]);
+        } else if ( e.data[0] == 128 || (e.data[0] == 144 && e.data[2] == 0) ) { // Key up event
+            user.instrument_instance.stop(calcFreq(e.data[1]));
         }
     };
+    function dec2hex(d, padding) {
+        var hex = Number(d).toString(16);
+        padding = typeof (padding) === "undefined" || padding === null ? padding = 2 : padding;
+
+        while (hex.length < padding) {
+            hex = "0" + hex;
+        }
+
+        return hex;
+    }
     // Connect internal device together with external midi device
     var connect = function (device, user) {
         if ( device && user ) {
@@ -1201,7 +1342,7 @@ desc    : Handles midi device connections. Keeps track of midi devices and their
                     // Assign device instance
                     devices[d].user = user;
                     // Attach callback to midi message event
-                    devices[d].midi.onmidimessage = function (e) {
+                    devices[d].midi.input.onmidimessage = function (e) {
                         onMessage(e, user);
                     };
                 }
@@ -1214,12 +1355,16 @@ desc    : Handles midi device connections. Keeps track of midi devices and their
         if ( d >= 0 ) {
             // Clear callback and user
             devices[d].user = null;
-            devices[d].midi.onmidimessage = null;
+            devices[d].midi.input.onmidimessage = null;
+            for (var i = 21 ; i < 109 ; i++) {
+                devices[d].midi.output.send(["0x"+dec2hex(144),"0x"+dec2hex(i),0x00]);
+            }
         }
     };
     // Get midi device current device is using
     var getActiveDevice = function (d) {
         var d = findDevice(d, true);
+        //console.log(d);
         if ( d > -1 ){
             return devices[d];
         } else {
@@ -1232,7 +1377,7 @@ desc    : Handles midi device connections. Keeps track of midi devices and their
         var result = null;
         devices.some(function ( d ) {
             if ( !active ) {
-                if ( d.midi.id == device.midi.id  ) {
+                if ( d.midi.input.id == device.midi.input.id  ) {
                     //console.log(d.midi.id, device.midi.id);
                     result = d;
                     return true;
@@ -1326,191 +1471,292 @@ angular.module('Sequencer',['Devices', 'keyboard']).
 controller('sequencerController', [function(){
     //var vm = $scope;
 }])
-.factory('sequencerService', ['devicesService', 'keyboardHelperService','$timeout','$interval', 'sequencerWorkerService','audioCtx','$q', function(devices, keyboard, $timeout, $interval, worker, ctx, $q){
-    var Scheduler = function () {
-        this.BPM = 60;
-        this.beatLen = 60/this.BPM; // 60 seconds multiplied by BPM
-        this.devices = devices.getAll();
-        this.nextNoteIndex = 0;
-        this.allTracks = [];
-        this.lookahead = 0.02; // seconds
-        this.interval = 25; // milliseconds
-        this.nextNoteTime;
-        this.promise = null;
-        this.isPlaying = false;
-        this.currentTime = 0;
-        this.startTime = null;
+.directive("schedulerControls", ["schedulerService","$timeout", "$window", "$rootScope",function(schedulerService, $timeout, $window, $rootScope){
+    return {
+        restrict: "A",
+        scope: true,
+        link: function ( $scope ) {
+            $scope.hasFinished = false;
+            $rootScope.$on("finishedTrack", function(){
+                $scope.hasFinished = true;
+            });
+            $scope.play = function (){
+                schedulerService.play();
+                var seeker = document.querySelectorAll(".seeker");
+                if ( $scope.params.isPlaying ) {
+                    if ( $scope.hasFinished ) {
+                        angular.forEach(seeker, function (e) {
 
-        this.init();
+                            e.style.WebkitTransition = "";
+                            e.style.MozTransition = "";
+                            e.style.left = "" + 0 + "px";
+                        });
+                        $scope.hasFinished = false;
+                    }
+                    $timeout(function(){
+                        angular.forEach(seeker, function(e){
+                            if ( $scope.hasFinished ) {
+                                e.style.WebkitTransition = "";
+                                e.style.MozTransition = "";
+                                e.style.left = "" + 0 + "px";
+                            }
+                            e.style.WebkitTransition = "all " + ($scope.params.trackLength - $scope.params.currentTime) + "s linear";
+                            e.style.MozTransition = "all " + ($scope.params.trackLength - $scope.params.currentTime) + "s linear";
+                            e.style.left = "" + $scope.params.trackLength*80 + "px";
+                        })
+                    },0);
+
+                } else {
+                    angular.forEach(seeker, function(e){
+                        e.style.left = $scope.params.currentTime*80 + "px";
+                        e.style.WebkitTransition = "";
+                        e.style.MozTransition = "";
+                    })
+                }
+            };
+        },
+        controller: function ( $scope ) {
+            //console.log(schedulerService);
+            $rootScope.$on("BPMChanged", function (){
+                //console.log("FIRE");
+            });
+            $scope.params = schedulerService.params;
+            $scope.$watch('params.BPM', function (n){
+                schedulerService.changeBPM(n);
+            });
+            $scope.togglePlayButton = function () {
+                return {
+                    'fa-play' : !$scope.params.isPlaying,
+                    'fa-pause' : $scope.params.isPlaying
+                }
+            };
+
+        },
+        templateUrl : "app/components/sequencer/view.html"
+    }
+}])
+.service("schedulerService", ['devicesService', 'keyboardHelperService','$timeout','$interval', 'sequencerWorkerService','audioCtx','$q','$rootScope', function(devices, keyboard, $timeout, $interval, worker, ctx, $q, $rootScope){
+    var params = {
+        BPM         : 120,
+        lookahead   : 0.01, // seconds50
+        isPlaying   : false,
+        currentTime : 0,
+        trackLength : 0,
+        gap         : 0
     };
 
-    Scheduler.prototype.getTracks = function () {
-            var defered = $q.defer();
-            var tmp = [];
-            // Fetch all tracks
-            defered.notify("about to update tracks");
-            this.devices.forEach(function(device) {
-                if (device.enabled){
-                // Save to temporary array for comparison
-                    tmp = tmp.concat(device.notes);
-                }
-            });
-            // compare new track to current one
-            var unique = tmp.concat(this.allTracks).filter(function() {
-                var seen = {};
-                return function(element, index, array) {
-                    return !( element.start+element.end+element.note in seen) && (seen[element.start+element.end+element.note] = 1);
-                };
-            }());
-            // If no changes found terminate function
-            //console.log([unique.length, this.allTracks.length, tmp]);
+    var interval = 10/params.BPM*1000; // 30 - eighth, 15 - sixteenth, 60 - quarter
+    var beatLen = 60/params.BPM; // 60 seconds multiplied by BPM. one quarter note duration. seconds
+    var tracks = null;
+    var nextNoteIndex = 0;
+    var allTracks = [];
+    var nextNoteTime;
+    var startTime = null;
+    var scheduled = true;
+    var pauseTime = 0;
 
-            if ( unique.length == this.allTracks.length ) {
-                defered.resolve({message : "no changes found"});
-            } else {
-                // otherwise update track list
-                console.log("please wait...");
-                this.allTracks = angular.copy(tmp);
-                //this.allTracks.sort(sortNotes);
-                defered.resolve({message : "Sort complete"});
-            }
+    var changeBPM = function (BPM) {
+        params.BPM = BPM;
+        interval = 10/params.BPM*1000; // 30 - eighth, 15 - sixteenth, 60 - quarter
+        beatLen = 60/params.BPM; // 60 seconds multiplied by BPM. one quarter note duration. seconds
+        worker.interval = interval;
+    };
+
+    var getTracks = function () {
+        var defered = $q.defer();
+        var tmp = [];
+        // Fetch all tracks
+        defered.notify("about to update tracks");
+        tracks = devices.getAll();
+        tracks.forEach(function(device) {
+            // Save to temporary array for comparison
+            if ( device.notes )
+            tmp = tmp.concat(device.notes);
+        });
+        // compare new track to current one
+        var unique = tmp.concat(allTracks).filter(function() {
+            var seen = {};
+            return function( element ) {
+                return !( element.start+element.end+element.note in seen) && (seen[element.start+element.end+element.note] = 1);
+            };
+        }());
+        // If no changes found terminate function
+        //console.log([unique.length, allTracks.length, tmp]);
+
+        if ( unique.length == allTracks.length ) {
+            defered.resolve({message : "no changes found"});
+        } else {
+            // otherwise update track list
+            //console.log("please wait...");
+            allTracks = angular.copy(tmp);
+
+            allTracks.sort(sortNotes);
+            defered.resolve({message : "Sort complete"});
+        }
         return defered.promise;
     };
 
-    Scheduler.prototype.play = function (stop) {
+    var play = function (stop) {
 
         if ( stop ) {
             worker.stop();
-            this.isPlaying = false;
-            return false;
+            params.isPlaying = false;
+            nextNoteIndex = 0;
+            nextNoteTime = 0;
+            params.currentTime = 0;
+            params.trackLength = 0;
+            startTime = 0;
+            pauseTime = 0;
+            $rootScope.$emit("finishedTrack");
+            return;
         }
-        var updateTracks = this.getTracks();
-        var self = this;
-        updateTracks.then(function(res){
-            //console.log(self.calculateNoteTiming(self.allTracks[self.allTracks.length-1]));
-            console.log(res.message);
-            self.isPlaying = !self.isPlaying;
-            if ( self.isPlaying ) {
-                worker.start();
-                self.nextNoteTime = self.calculateNoteTiming(self.allTracks[self.nextNoteIndex]).time.start + ctx.currentTime;
 
-                console.log(self.nextNoteTime, ctx.currentTime);
-                //self.startTime =
-            } else {
-                worker.stop();
-                //console.log(self.devices);
-                self.devices.forEach(function(d){
-                    //console.log(d.instrument_instance);
-                    d.instrument_instance.stopAll();
-                });
-                self.startTime = null;
-            }
-        });
+        params.isPlaying = !params.isPlaying;
+        if ( params.isPlaying ) {
+            var updateTracks = getTracks();
+            updateTracks.then(function(res){
+                //allTracks.forEach(function(note){
+                //    console.log(calculateNoteTiming(note).time);
+                //});
+                params.trackLength = calculateNoteTiming(allTracks[allTracks.length-1]).time.end;
+                worker.start();
+                startTime = ctx.currentTime;
+                if ( pauseTime > 0 ) {
+                    startTime -= pauseTime;
+                    console.log("Pause time: ", pauseTime, startTime);
+                }
+
+                nextNoteTime = calculateNoteTiming(allTracks[nextNoteIndex]).time.start;
+            });
+        } else {
+            worker.stop();
+            tracks.forEach(function (track){
+                track.instrument_instance.stop(0, true);
+            });
+
+            pauseTime = ctx.currentTime - startTime;
+            //console.log("Pause time: ", pauseTime, startTime);
+        }
     };
 
-    Scheduler.prototype.getCurrentTime = function () {
-        return this.currentTime;
-    }
 
-    Scheduler.prototype.init = function () {
-        var self = this;
-        worker.worker.onmessage = function (e) {
+    var initialize = function () {
+        //console.log("inited");
+        //console.log(worker);
+        worker.WebWorker.onmessage = function (e) {
             if ( e.data == "tick" ) {
-                self.schedule();
+                schedule();
             } else {
-                console.log({"message" : e.data});
+                //console.log({"message" : e.data});
             }
         };
-        worker.worker.postMessage({"interval" : this.interval});
+        worker.interval = interval;
     };
 
-    Scheduler.prototype.scheduleNote = function ( note ) {
-        var device = devices.get(note.target);
-        device.instrument_instance.play(this.nextNoteTime, this.nextNoteTime + note.time.end,note.velocity, keyboard.getFrequencyOfNote(note.note));
-        console.log("scheduleNote()",this.nextNoteTime);
+    var scheduleNote = function () {
+        //var device = devices.get(note.target);
+        //console.log(device);
+        scheduled = false;
+        var note = allTracks[nextNoteIndex];
+        var schedule = {
+            start : ctx.currentTime + params.gap,
+            stop  : ctx.currentTime + note.time.end - note.time.start
+        };
+        console.log("Schedule: ", schedule);
+        //console.log("Note object: " , note);
+        note.target.instrument_instance.play( keyboard.getFrequencyOfNote(note.note), schedule,note.velocity);
+        nextNote();
+        scheduled = true;
+        //console.log("scheduleNote()",nextNoteTime);
 
-        //this.nextNoteIndex++;
+        //nextNoteIndex++;
     };
 
-    Scheduler.prototype.nextNote = function(returnNote){
+    var nextNote = function(returnNote){
         //var ct = ctx.currentTime;
-        //if ( this.nextNoteIndex >= this.allTracks.length ) return false;
-        //var next = this.calculateNoteTiming(this.allTracks[this.nextNoteIndex]);
+        //if ( nextNoteIndex >= allTracks.length ) return false;
+        //var next = calculateNoteTiming(allTracks[nextNoteIndex]);
         //if ( returnNote ){
         //    next.time.end += ct;
         //    next.time.start += ct
         //    return next;
         //}
         //
-        //var lookahead = ct + this.lookahead;
-        //if ( ( next.time.start  < lookahead) && this.nextNoteIndex < this.allTracks.length ) {
-        //    console.log(true,(next.time.start+ct), lookahead, this.startTime);
+        //var lookahead = ct + lookahead;
+        //if ( ( next.time.start  < lookahead) && nextNoteIndex < allTracks.length ) {
+        //    console.log(true,(next.time.start+ct), lookahead, startTime);
         //    return true;
         //} else {
         //    console.log(false,(next.time.start+ct), lookahead);
         //    return false;
         //
         //}
-        this.nextNoteIndex++;
-        var nn = this.calculateNoteTiming(this.allTracks[this.nextNoteIndex]);
-        var pn = this.calculateNoteTiming(this.allTracks[this.nextNoteIndex-1]);
-        this.nextNoteTime += nn.time.start - pn.time.start;
-        console.log('nextNote()',this.nextNoteTime, this.nextNoteIndex, nn,pn);
+        nextNoteIndex++;
+        if ( !allTracks[nextNoteIndex] ) return;
+        var nn = calculateNoteTiming(allTracks[nextNoteIndex]);
+        //var pn = calculateNoteTiming(allTracks[nextNoteIndex-1]);
+        nextNoteTime = nn.time.start;
+        //console.log('nextNote()',nextNoteTime, nextNoteIndex, nn,pn);
     };
 
-    Scheduler.prototype.increaseTimer = function(){
-        var deferred = new $q.defer();
-        this.currentTime += this.interval;
-        deferred.resolve("done");
-        return deferred.promise;
+    var increaseTimer = function(){
+        $timeout(function(){
+            params.currentTime = ctx.currentTime - startTime;
+        },0);
     };
 
-    Scheduler.prototype.schedule = function () {
-        console.log("schedulin");
+    var schedule = function () {
+        console.log("schedulin***************************************************");
 
-        //var updateTracks = this.getTracks();
+        //var updateTracks = getTracks();
         //updateTracks.then(function (r){
-        var self = this;
-        this.increaseTimer().then(function(){
-            self.getCurrentTime();
-        });
-        //console.log(this.currentTime);
-            while ( this.nextNoteTime < ctx.currentTime + this.lookahead && this.nextNoteIndex < this.allTracks.length ) {
-
-                console.log("loopin");
-                //console.log(ctx.currentTime);
-                this.scheduleNote(this.calculateNoteTiming(this.allTracks[this.nextNoteIndex]));
-                this.nextNote();
-                //if ( this.nextNoteIndex >= this.allTracks.length ) this.play(true);
-            }
-        if ( this.nextNoteIndex >= this.allTracks.length ) {
-            this.play(true);
-            this.nextNoteIndex = 0;
-            this.currentTime = 0;
+        console.log(params.trackLength, params.currentTime);
+        if ( params.trackLength <= params.currentTime ) {
+            play(true);
+            return;
         };
+        increaseTimer();
+        console.log("Timings: ",nextNoteTime, (params.currentTime + params.lookahead));
+        while ( parseFloat(nextNoteTime) < parseFloat(params.currentTime + params.lookahead) && nextNoteIndex < allTracks.length && params.isPlaying ) {
+            console.log("loopin");
+            //console.log(ctx.currentTime);
+            if ( scheduled ) {
+                scheduleNote();
+            }
+            //if ( nextNoteIndex >= allTracks.length ) play(true);
+        }
         //});
     };
     var sortNotes = function (a, b) {
 
-        var astart  = breakNoteCoordinates(a.start);
-        var bstart  = breakNoteCoordinates(b.start);
-
-        if ( astart['bar'] > bstart['bar'] ) {
+        //var astart  = breakNoteCoordinates(a.start);
+        //var bstart  = breakNoteCoordinates(b.start);
+        //
+        //if ( astart['bar'] > bstart['bar'] ) {
+        //    return 1;
+        //} else if ( astart['bar'] == bstart['bar'] ) {
+        //    if ( astart['beat'] == bstart['beat'] ) {
+        //        if ( astart['eighth'] == bstart['eighth'] ) {
+        //            return 0;
+        //        } else if ( astart['eighth'] > bstart['eighth'] ) {
+        //            return 1;
+        //        } else {
+        //            return -1;
+        //        }
+        //    } else if ( astart['quarter'] > bstart['quarter'] ) {
+        //        return 1;
+        //    } else {
+        //        return -1;
+        //    }
+        //} else {
+        //    return -1;
+        //}
+        a = calculateNoteTiming(a);
+        b = calculateNoteTiming(b);
+        if ( a.time.start > b.time.start ) {
             return 1;
-        } else if ( astart['bar'] == bstart['bar'] ) {
-            if ( astart['beat'] == bstart['beat'] ) {
-                if ( astart['eighth'] == bstart['eighth'] ) {
-                    return 0;
-                } else if ( astart['eighth'] > bstart['eighth'] ) {
-                    return 1;
-                } else {
-                    return -1;
-                }
-            } else if ( astart['quarter'] > bstart['quarter'] ) {
-                return 1;
-            } else {
-                return -1;
-            }
+        } else if (a.time.start == b.time.start ) {
+            return 0;
         } else {
             return -1;
         }
@@ -1521,47 +1767,337 @@ controller('sequencerController', [function(){
         //console.log(brake);
         return {
             bar    : parseInt(brake[0]),
-            beat    : parseInt(brake[2]),
-            eighth  : parseInt(brake[1])
+            beat    : parseInt(brake[1]),
+            eighth  : parseInt(brake[2])
         };
     };
 
-    Scheduler.prototype.noteLength = function ( type ) {
+    var noteLength = function ( type ) {
+        //console.log(beatLen);
         switch ( type ) {
-            case "bar"      : return this.beatLen*4; // Length of a bar (4 quarter notes)
-            case "beat"  : return this.beatLen; // Length of a beat  (1 quarter note)
-            case "eighth"   : return (this.beatLen/2); // Length of a sixteenth note ( 1/8 of a quarter note)
+            case "bar"      : return beatLen*4; // Length of a bar (4 quarter notes)
+            case "beat"  : return beatLen; // Length of a beat  (1 quarter note)
+            case "eighth"   : return (beatLen/2); // Length of a eighth note ( 1/8  note)
             default: return false;
         }
     };
 
-    Scheduler.prototype.calculateNoteTiming = function (note) {
+    var calculateNoteTiming = function (note) {
         var start = breakNoteCoordinates(note.start);
         var end = breakNoteCoordinates(note.end);
-    //console.log(start,end);
+        //console.log(start,end);
         var noteStartTime =
-            ( start.bar * this.noteLength("bar")) +
-            ( start.beat * this.noteLength("beat") ) +
-            ( start.eighth * this.noteLength("eighth") );
+            ( start.bar * noteLength("bar")) +
+            ( start.beat * noteLength("beat") ) +
+            ( start.eighth * noteLength("eighth") );
         var noteEndTime =
-            ( end.bar * this.noteLength("bar")) +
-            ( end.beat * this.noteLength("beat") ) +
-            ( end.eighth * this.noteLength("eighth") );
+            ( end.bar * noteLength("bar")) +
+            ( end.beat * noteLength("beat") ) +
+            ( end.eighth * noteLength("eighth") );
         note.time = {
             start  : noteStartTime,
             end    : noteEndTime
         };
         return note;
     };
-    return {
-        getScheduler : function () {
-            return new Scheduler();
-        }
-    };
 
+
+
+    initialize();
+
+    this.play = play;
+    this.calculateNoteTiming = calculateNoteTiming;
+    this.changeBPM = changeBPM;
+    this.params = params;
+}])
+.factory('sequencerService', ['devicesService', 'keyboardHelperService','$timeout','$interval', 'sequencerWorkerService','audioCtx','$q','$rootScope', function(devices, keyboard, $timeout, $interval, worker, ctx, $q, $rootScope){
+    var Scheduler = function () {
+        var params = {
+            BPM         : 50,
+            lookahead   : 0.01, // seconds50
+            interval    : 10/120*1000, // 30 - eighth, 15 - sixteenth, 60 - quarter
+            isPlaying   : false,
+            currentTime : 0,
+            trackLength : 0,
+            gap         : 0
+        };
+
+
+        var beatLen = 60/params.BPM; // 60 seconds multiplied by BPM. one quarter note duration. seconds
+        var tracks = null;
+        var nextNoteIndex = 0;
+        var allTracks = [];
+        var nextNoteTime;
+        var startTime = null;
+        var scheduled = true;
+        var pauseTime = 0;
+
+        var getTracks = function () {
+                var defered = $q.defer();
+                var tmp = [];
+                // Fetch all tracks
+                defered.notify("about to update tracks");
+                tracks = devices.getAll();
+                tracks.forEach(function(device) {
+                    if (device.enabled){
+                    // Save to temporary array for comparison
+                        tmp = tmp.concat(device.notes);
+                    }
+                });
+                // compare new track to current one
+                var unique = tmp.concat(allTracks).filter(function() {
+                    var seen = {};
+                    return function( element ) {
+                        return !( element.start+element.end+element.note in seen) && (seen[element.start+element.end+element.note] = 1);
+                    };
+                }());
+                // If no changes found terminate function
+                //console.log([unique.length, allTracks.length, tmp]);
+    
+                if ( unique.length == allTracks.length ) {
+                    defered.resolve({message : "no changes found"});
+                } else {
+                    // otherwise update track list
+                    console.log("please wait...");
+                    allTracks = angular.copy(tmp);
+
+                    allTracks.sort(sortNotes);
+                    defered.resolve({message : "Sort complete"});
+                }
+            return defered.promise;
+        };
+    
+        var play = function (stop) {
+    
+            if ( stop ) {
+                worker.stop();
+                params.isPlaying = false;
+                nextNoteIndex = 0;
+                nextNoteTime = 0;
+                params.currentTime = 0;
+                params.trackLength = 0;
+                startTime = 0;
+                pauseTime = 0;
+                $rootScope.$emit("finishedTrack");
+                return;
+            }
+
+            params.isPlaying = !params.isPlaying;
+            if ( params.isPlaying ) {
+                var updateTracks = getTracks();
+                updateTracks.then(function(res){
+                    //allTracks.forEach(function(note){
+                    //    console.log(calculateNoteTiming(note).time);
+                    //});
+                    params.trackLength = calculateNoteTiming(allTracks[allTracks.length-1]).time.end;
+                    worker.start();
+                    startTime = ctx.currentTime;
+                    if ( pauseTime > 0 ) {
+                        startTime -= pauseTime;
+                        //console.log("Pause time: ", pauseTime, startTime);
+                    }
+
+                    nextNoteTime = calculateNoteTiming(allTracks[nextNoteIndex]).time.start;
+                });
+            } else {
+                worker.stop();
+                tracks.forEach(function (track){
+                    track.instrument_instance.stop(0, true);
+                });
+
+                pauseTime = ctx.currentTime - startTime;
+                //console.log("Pause time: ", pauseTime, startTime);
+            }
+        };
+
+    
+        var initialize = function () {
+            //console.log("inited");
+            //console.log(worker);
+            worker.WebWorker.onmessage = function (e) {
+                if ( e.data == "tick" ) {
+                    schedule();
+                } else {
+                    //console.log({"message" : e.data});
+                }
+            };
+            worker.interval = params.interval;
+        };
+    
+        var scheduleNote = function () {
+            //var device = devices.get(note.target);
+            //console.log(device);
+            scheduled = false;
+            var note = allTracks[nextNoteIndex];
+            var schedule = {
+                start : ctx.currentTime + params.gap,
+                stop  : ctx.currentTime + note.time.end - note.time.start
+            };
+            console.log("Schedule: ", schedule);
+            //console.log("Note object: " , note);
+            note.target.instrument_instance.play( keyboard.getFrequencyOfNote(note.note), schedule,note.velocity);
+            nextNote();
+            scheduled = true;
+            //console.log("scheduleNote()",nextNoteTime);
+    
+            //nextNoteIndex++;
+        };
+    
+        var nextNote = function(returnNote){
+            //var ct = ctx.currentTime;
+            //if ( nextNoteIndex >= allTracks.length ) return false;
+            //var next = calculateNoteTiming(allTracks[nextNoteIndex]);
+            //if ( returnNote ){
+            //    next.time.end += ct;
+            //    next.time.start += ct
+            //    return next;
+            //}
+            //
+            //var lookahead = ct + lookahead;
+            //if ( ( next.time.start  < lookahead) && nextNoteIndex < allTracks.length ) {
+            //    console.log(true,(next.time.start+ct), lookahead, startTime);
+            //    return true;
+            //} else {
+            //    console.log(false,(next.time.start+ct), lookahead);
+            //    return false;
+            //
+            //}
+            nextNoteIndex++;
+            if ( !allTracks[nextNoteIndex] ) return;
+            var nn = calculateNoteTiming(allTracks[nextNoteIndex]);
+            //var pn = calculateNoteTiming(allTracks[nextNoteIndex-1]);
+            nextNoteTime = nn.time.start;
+            //console.log('nextNote()',nextNoteTime, nextNoteIndex, nn,pn);
+        };
+    
+        var increaseTimer = function(){
+            $timeout(function(){
+                params.currentTime = ctx.currentTime - startTime;
+            },0);
+        };
+    
+        var schedule = function () {
+            //console.log("schedulin***************************************************");
+    
+            //var updateTracks = getTracks();
+            //updateTracks.then(function (r){
+            //console.log(params.trackLength, params.currentTime);
+            if ( params.trackLength <= params.currentTime ) {
+                play(true);
+                return;
+            };
+            increaseTimer();
+            //console.log("Timings: ",nextNoteTime, (params.currentTime + params.lookahead));
+            while ( parseFloat(nextNoteTime) < parseFloat(params.currentTime + params.lookahead) && nextNoteIndex < allTracks.length && params.isPlaying ) {
+                //console.log("loopin");
+                //console.log(ctx.currentTime);
+                if ( scheduled ) {
+                    scheduleNote();
+                }
+                //if ( nextNoteIndex >= allTracks.length ) play(true);
+            }
+            //console.log("end schedule");
+            //});
+        };
+        var sortNotes = function (a, b) {
+
+            //var astart  = breakNoteCoordinates(a.start);
+            //var bstart  = breakNoteCoordinates(b.start);
+            //
+            //if ( astart['bar'] > bstart['bar'] ) {
+            //    return 1;
+            //} else if ( astart['bar'] == bstart['bar'] ) {
+            //    if ( astart['beat'] == bstart['beat'] ) {
+            //        if ( astart['eighth'] == bstart['eighth'] ) {
+            //            return 0;
+            //        } else if ( astart['eighth'] > bstart['eighth'] ) {
+            //            return 1;
+            //        } else {
+            //            return -1;
+            //        }
+            //    } else if ( astart['quarter'] > bstart['quarter'] ) {
+            //        return 1;
+            //    } else {
+            //        return -1;
+            //    }
+            //} else {
+            //    return -1;
+            //}
+            a = calculateNoteTiming(a);
+            b = calculateNoteTiming(b);
+            if ( a.time.start > b.time.start ) {
+                return 1;
+            } else if (a.time.start == b.time.start ) {
+                return 0;
+            } else {
+                return -1;
+            }
+        };
+
+        var breakNoteCoordinates = function (coords) {
+            var brake = coords.split(".");
+            //console.log(brake);
+            return {
+                bar    : parseInt(brake[0]),
+                beat    : parseInt(brake[1]),
+                eighth  : parseInt(brake[2])
+            };
+        };
+
+        var noteLength = function ( type ) {
+            switch ( type ) {
+                case "bar"      : return beatLen*4; // Length of a bar (4 quarter notes)
+                case "beat"  : return beatLen; // Length of a beat  (1 quarter note)
+                case "eighth"   : return (beatLen/2); // Length of a eighth note ( 1/8  note)
+                default: return false;
+            }
+        };
+
+        var calculateNoteTiming = function (note) {
+            var start = breakNoteCoordinates(note.start);
+            var end = breakNoteCoordinates(note.end);
+        //console.log(start,end);
+            var noteStartTime =
+                ( start.bar * noteLength("bar")) +
+                ( start.beat * noteLength("beat") ) +
+                ( start.eighth * noteLength("eighth") );
+            var noteEndTime =
+                ( end.bar * noteLength("bar")) +
+                ( end.beat * noteLength("beat") ) +
+                ( end.eighth * noteLength("eighth") );
+            note.time = {
+                start  : noteStartTime,
+                end    : noteEndTime
+            };
+            return note;
+        };
+
+        initialize();
+
+        return {
+            get params() {
+                return params;
+            },
+            get interval(){
+              return params.interval;
+            },
+            get BPM () {
+              return params.BPM;
+            },
+            set BPM ( a ) {
+                params.BPM = a;
+            },
+            play : function(){
+                $timeout(function(){
+                    play();
+                },0);
+            }
+        };
+    };
+    return new Scheduler();
     //var play = function () {
     //
-    //    this.devices.forEach(function(device){
+    //    devices.forEach(function(device){
     //        var device = device;
     //        if ( device.enabled ) {
     //            //device.notes.sort(sortNotes);
@@ -1599,31 +2135,40 @@ controller('sequencerController', [function(){
     //    //console.log(allTracks);
     //
     //};
-    //this.stop = function (){
+    //stop = function (){
     //    var ap = AudioParam.cancelScheduledValues(ctx.currentTime);
     //}
 
 }])
 .service('sequencerWorkerService', [function () {
-    var SequencerWorker = function (  ) {
-        this.worker = new Worker('app/components/sequencer/sequencerWorker.js');
-    };
-    SequencerWorker.prototype.stop = function () {
-        this.worker.postMessage("stop");
-    };
-    SequencerWorker.prototype.start = function () {
-        this.worker.postMessage("start");
-    };
-    SequencerWorker.prototype.changeInterval = function ( lookaheadTime ) {
-        this.worker.postMessage({"interval" : lookaheadTime});
-    };
-
+    function SequencerWorker () {
+        var WebWorker = new Worker('app/components/sequencer/sequencerWorker.js');
+        var stop = function () {
+            WebWorker.postMessage("stop");
+        }
+        var start = function () {
+            WebWorker.postMessage("start");
+        }
+        var changeInterval = function ( lookaheadTime ) {
+            WebWorker.postMessage({"interval" : lookaheadTime});
+        }
+        return {
+            get WebWorker () {
+                return WebWorker;
+            },
+            set interval (a) {
+                changeInterval(a);
+            },
+            start : start,
+            stop  : stop
+        }
+    }
     return new SequencerWorker();
 }])
 .controller('schedulerController',['sequencerService','$scope',function(sequencer, $scope){
     var self = $scope;
     self.sequencer = sequencer.getScheduler();
-    console.log(self.sequencer);
+    //console.log(self.sequencer);
     self.play = function () {
         self.sequencer.play();
     };
@@ -1636,11 +2181,138 @@ controller('sequencerController', [function(){
         //self.currentTime = n;
     });
 }])
+.directive("scrollBar", [function(){
+    return {
+        restrict    : "A",
+        scope : true,
+        transclude: true,
+        link : function ($scope, $el) {
+            var scrollHandler = function (e){
+                var notePreviews = document.querySelectorAll(".note-preview, .timescale-wrapper-outter");
+                var self = angular.element(this)[0];
+                angular.forEach(angular.element(notePreviews), function(e) {
+                    e.scrollLeft = self.scrollLeft;
+                });
+            };
+            angular.element($el).bind('scroll',scrollHandler);
+        },
+        template : '<div class="scroll-bar-wrapper">&nbsp;</div>'
+    }
+}])
 .service('notesFactory', [function() {
     return {
 
     }
 }]);
+
+/**
+ * Created by Haroldas Latonas on 4/10/2016.
+ */
+/*
+ Reverb effect
+ */
+angular.module('chorusTunaEffect', []).
+factory('chorusTuna',['audioCtx','$timeout', '$http', 'tunaEffectsService',function(audioCtx, $timeout, $http,tunaEffectsService){
+    var Chorus = (function () {
+        var id = "Chorus";
+        var name = "Chorus";
+        function Chorus() {
+            // Create internal gain nodes
+            var localInputGainNode = audioCtx.createGain();
+            var localOutputGainNode = audioCtx.createGain();
+
+            // Define parameters for effect
+            var params = {
+                // Input
+                input: null,
+                // Output to local gain node
+                // Later this node connects to other nodes
+                output: localOutputGainNode,
+                enabled: true,
+                chorusSetting : {
+                    rate: 1.5,         //0.01 to 8+
+                    feedback: 0.2,     //0 to 1+
+                    delay: 0.0045,     //0 to 1
+                    bypass: 0          //the value 1 starts the effect as bypassed, 0 or 1
+                }
+            };
+            // Give name for gain node for debugging
+            localOutputGainNode.name = "Chorus tuna";
+
+            var chorus = new tunaEffectsService.tuna.Chorus(params.chorusSetting);
+
+            console.log(chorus);
+
+            // Route audio nodes
+            localInputGainNode.connect(chorus);
+
+            // Route outputs
+            chorus.connect(localOutputGainNode);
+
+            return {
+                get rate() {
+                    return chorus._rate;
+                },
+                set rate(a){
+                    chorus.rate = a;
+                },
+                get feedback(){
+                  return chorus._feedback;
+                },
+                set feedback(a){
+                    chorus.feedback = a;
+                },
+                get delay(){
+                    return chorus._delay;
+                },
+                set delay(a){
+                    chorus.delay = a;
+                },
+                get bypass(){
+                    return chorus._bypass;
+                },
+                set bypass(a){
+                    chorus.bypass = a;
+                },
+                get id () {
+                    return id;
+                },
+                get name () {
+                    return name;
+                },
+                get params() {
+                    return params;
+                },
+                /*
+                 gain value in decibels.
+                 Range:    [-40, 40]
+                 */
+                set volume(a) {
+                    params.gain = a;
+                    filter.gain.value = params.gain;
+                },
+                set input(a) {
+                    params.input = a;
+                    params.input.connect(localInputGainNode);
+
+                },
+                set output(a) {
+                    params.output.connect(a);
+                },
+                disconnect: function () {
+                    params.input.disconnect();
+                    params.output.disconnect();
+                },
+                init: function () {
+
+                }
+            };
+        }
+        return Chorus;
+    })();
+    return Chorus;
+}]);
+
 angular.module('filterEffect', []).
 factory('filter',['audioCtx','$timeout',function(audioCtx, $timeout){
     var Filter = (function (){
@@ -1989,180 +2661,260 @@ factory('visualization',['audioCtx','$timeout','$rootScope',function(audioCtx, $
 /**
  * Created by 12059_000 on 12/9/2015.
  */
-angular.module('anotherSynth', [])
-    .factory('anotherSynth', ['audioCtx','$rootScope', function(audioCtx, $rootScope){
-        var name = "Another Synth";
-        var id = "another_synth";
-        var params = {
-            gain : 0.5,
-            output : audioCtx.createGain(),
-            synthTypes : ['square', 'sine', 'triangle','sawtooth'],
-            osc1 : {
-                enabled : true,
-                synthType : 'square',
-                octave : 0
-            },
-            osc2 : {
-                enabled : true,
-                synthType : 'sine',
-                octave : -2
+angular.module('simple_sampler', [])
+.factory('simpleSampler', ['audioCtx','$rootScope', '$http' ,'midiHandlerService', 'devicesService','$timeout', function(audioCtx, $rootScope, $http, midiHandlerService, devicesService, $timeout){
+    var SimpleSampler = (function () {
+        var name = "Simple Sampler";
+        var id = "simple_sampler";
+
+        function Instrument () {
+
+            var gainNode = audioCtx.createGain();
+            var activeNotes = [];
+            var name = "Simple Sampler";
+            var id = "simple_sampler";
+            var devname = "";
+            var notes = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'].sort();
+            var notesList = [];
+            var c = 0;
+            var o = 0;
+            var initialNote;
+            for ( var i = 21 ; i < 109 ; i++ ) {
+                if ( notes[c%12] == "C" ) {
+                    o++;
+                }
+                if ( notes[c%12] == "A" && o == 4 ) {
+                    initialNote = {
+                        letter : notes[c%12],
+                        octave : o,
+                        number : i
+                    };
+                }
+                notesList.push({
+                    letter : notes[c%12],
+                    octave : o,
+                    number : i
+                });
+                c++;
             }
-        };
-        var activeNotes = [];
-
-
-        var initOscillators = function (freq) {
-            var oscillators = {
-                freq : freq,
-                osc : []
+            var params = {
+                notesList : notesList,
+                gain : 0.5,
+                output : gainNode,
+                currentNote : initialNote,
+                currentSample : null,
+                assignedSamples : [],
+                samples: [
+                    {
+                        name : "bop kick - snares on - 3",
+                        filename : "jazz_funk_drums/bop kick - snares on - 3.wav"
+                    },
+                    {
+                        name : "snare - snares on - 6",
+                        filename : "jazz_funk_drums/snare - snares on - 6.wav"
+                    },
+                    {
+                        name : "hihat - close - 2",
+                        filename : "jazz_funk_drums/hihat - close - 2.wav"
+                    },
+                    {
+                        name : "stickshot - snares on - 6",
+                        filename : "jazz_funk_drums/stickshot - snares on - 6.wav"
+                    },
+                    {
+                        name : "rimshot - snares on - 1",
+                        filename : "jazz_funk_drums/rimshot - snares on - 1.wav"
+                    },
+                    {
+                        name : "ride - 1",
+                        filename : "jazz_funk_drums/ride - 1.wav"
+                    },
+                    {
+                        name : "hihat - open - 1",
+                        filename : "jazz_funk_drums/hihat - open - 1.wav"
+                    },
+                    {
+                        name : "floor tom - snares on - 8",
+                        filename : "jazz_funk_drums/floor tom - snares on - 8.wav"
+                    }
+                ]
             };
-            if ( params.osc1.enabled ) {
-                osc1 = audioCtx.createOscillator();
+            var d;
+            var m;
+            $timeout(function(){
+                d = devicesService.get(devname);
+            },0);
 
-                osc1.connect(params.gainNode);
-                for ( var i = 0 ; i < Math.abs(params.osc1.octave) ; i++ ) {
-                    if ( params.osc1.octave < 0 ) {
-                        freq -= freq/2;
-                    } else if ( params.osc1.octave > 0) {
-                        freq += freq*2;
-                    }
+            var noteFromFrequency = function (freq) {
+
+                var noteNum = 12 * (Math.log( freq / 440 ) / Math.log(2) );
+                return Math.round( noteNum ) + 69;
+            };
+
+            function dec2hex(d, padding) {
+                var hex = Number(d).toString(16);
+                padding = typeof (padding) === "undefined" || padding === null ? padding = 2 : padding;
+
+                while (hex.length < padding) {
+                    hex = "0" + hex;
                 }
-                osc1.frequency.value = freq;
-                osc1.type = params.osc1.synthType;
-                //this.params.device.gainNode.gain.setValueAtTime(velocity, audioCtx.currentTime + start);
-                osc1.start(0);
-                oscillators.osc.push(osc1);
-            }
-            if ( params.osc2.enabled ) {
-                osc2 = audioCtx.createOscillator();
 
-                osc2.connect(params.gainNode);
-                for ( var i = 0 ; i < Math.abs(params.osc2.octave) ; i++ ) {
-                    if ( params.osc2.octave < 0 ) {
-                        freq -= freq/2;
-                    } else if ( params.osc2.octave > 0) {
-                        freq += freq*2;
+                return hex;
+            }
+
+            var assignSample = function ( sample, note ) {
+                $http({
+                    method          : "GET",
+                    url             : "assets/samples/" + sample.filename,
+                    responseType    : "arraybuffer"
+                }).then(function(response){
+                    //console.log(note.number);
+                    if (m){
+                        var message = [
+                            "0x"+dec2hex(144),"0x"+dec2hex(note.number),"0x"+dec2hex(127)
+                        ]
+                        m.midi.output.send(message);
                     }
-                }
-                osc2.frequency.value = freq ;
-                osc2.type = params.osc2.synthType;
-                //this.params.device.gainNode.gain.setValueAtTime(velocity, audioCtx.currentTime + start);
-                osc2.start(0);
-                oscillators.osc.push(osc2);
-            }
-            return oscillators;
-        };
-
-
-        var play = function(freq) {
-            var osc = initOscillators(freq);
-            activeNotes.push(osc);
-        };
-
-        var stopAll = function () {
-            for ( var i = 0 ; i < activeNotes.length ; i++ ) {
-                activeNotes[i].stop(0);
-            }
-        };
-
-        var stop = function(frequency) {
-            var newNotes = [];
-            for ( var i = 0 ; i < activeNotes.length ; i++ ) {
-                if ( Math.round(activeNotes[i].freq) === Math.round(frequency) ) {
-                    activeNotes[i].osc.forEach(function(o){
-                        o.stop(0);
-                        o.disconnect();
+                    audioCtx.decodeAudioData( response.data, function (buffer) {
+                        params.assignedSamples["" + note.number + ""] = sample;
+                        params.assignedSamples["" + note.number + ""].buffer = buffer;
+                        params.assignedSamples["" + note.number + ""].panner = audioCtx.createStereoPanner();
+                        params.assignedSamples["" + note.number + ""].gainNode = audioCtx.createGain();
                     });
-                } else {
-                    newNotes.push(activeNotes[i]);
+
+                });
+
+            };
+
+            var initSample = function ( freq, schedule, velocity ) {
+                var note = noteFromFrequency(freq);
+                var sample = params.assignedSamples["" + note + ""];
+                //console.log(sample, note);
+                if ( !sample ) return;
+
+                var source = audioCtx.createBufferSource();
+
+                source.buffer = sample.buffer;
+                source.connect(sample.panner);
+                sample.panner.connect(sample.gainNode);
+                sample.gainNode.connect(gainNode);
+
+                source.start(0);
+                return {
+                    src : source,
+                    freq : freq
+                };
+            };
+
+            var play = function(freq, schedule, velocity) {
+                initSample(freq, schedule, velocity);
+                //activeNotes.push(sample);
+            };
+
+
+            var stop = function(frequency, stopAll) {
+                var newNotes = [];
+                for ( var i = 0 ; i < activeNotes.length ; i++ ) {
+                    if ( (Math.round(activeNotes[i].freq) === Math.round(frequency)) || stopAll ) {
+                        activeNotes[i].src.stop(0);
+                        activeNotes[i].src.disconnect();
+                    } else {
+                        newNotes.push(activeNotes[i]);
+                    }
+                }
+                activeNotes = newNotes;
+            };
+            return {
+                set output(a) {
+                    params.output.disconnect();
+                    params.output.connect(a);
+                },
+                set devname(a) {
+                    devname = a;
+                    //console.log(a);
+                    //console.log("set name: " + a + ", for :", idd  );
+                },
+                get devname () {
+                    return devname;
+                },
+                get id (){
+                    return id;
+                },
+                get currentNote() {
+                    return params.currentNote;
+                },
+                get pan(){
+                   return (params.currentSample) ? params.currentSample.params.pan : null;
+                },
+                set pan(a){
+                    params.currentSample.params.pan = a;
+                    params.currentSample.panner.pan.value = a;
+                },
+                get sampleGain(){
+                  return (params.currentSample)?params.currentSample.params.gain:null;
+                },
+                set sampleGain(a){
+                    if (m) {
+                        var message = [
+                            "0x" + dec2hex(144), "0x" + dec2hex(params.currentNote.number), "0x" + dec2hex(Math.round(127 * a))
+                        ]
+                        m.midi.output.send(message);
+                    }
+                    params.currentSample.params.gain = a;
+                    params.currentSample.gainNode.gain.value = a;
+                },
+                set currentNote(a) {
+
+                    params.currentNote = a;
+                    params.currentSample = params.assignedSamples[a.number];
+                    //console.log(params.currentSample);
+                },
+                get currentSample() {
+                    return params.currentSample;
+                },
+                set currentSample(a){
+                    if (!m)
+                    m = midiHandlerService.getActive(d);
+                    params.currentSample = a;
+                    params.currentSample.params = {
+                        pan : 0,
+                        gain : 0.5,
+                        duration : 1
+                    };
+                    assignSample(a, params.currentNote);
+                },
+                get notes () {
+                    return notesList;
+                },
+                set volume (a) {
+                    params.gain = a;
+                    params.output.gain.value = params.gain;
+                    //console.log(a);
+                },
+                get volume () {
+                    return params.gain;
+                },
+                get params (){
+                    return params;
+                },
+                play : play,
+                stop : stop,
+                detachSample : function(){
+                    if (m){
+                        var message = [
+                            "0x"+dec2hex(144),"0x"+dec2hex(params.currentNote.number),"0x"+dec2hex(0)
+                        ];
+                        m.midi.output.send(message);
+                    }
+                    delete params.assignedSamples[params.currentNote.number];
+                    params.currentSample = undefined;
                 }
             }
-            activeNotes = newNotes;
-        };
-        return {
-            get id(){
-                return id;
-            },
-            set volume(a) {
-                params.gain = a;
-                gainNode.gain.value = params.gain;
-            },
-            get volume() {
-                return params.gain;
-            },
-            get params(){
-                return params;
-            },
-            play : play,
-            stop : stop,
-            set output(a) {
-                params.output = gainNode.connect(a);
-                gainNode.connect(a);
-            }
-        };
-    }]);
-//.service('simpleSynth', ['audioCtx','masterGain', function(audioCtx){
-//    var Instrument = function ( id, device ) {
-//        this.name = "SimpleSynth";
-//        this.id = "simple_synth";
-//        this.params = {
-//            id : id,
-//            gain : 0.5,
-//            output : device.gainNode,
-//            device : device,
-//            input : null
-//        };
-//
-//        this.gainNode = audioCtx.createGain();
-//        this.type = "square";
-//        this.gainNode.connect(this.params.output);
-//        this.chords = [];
-//        this.gainNode.gain.value = this.params.gain;
-//    };
-//
-//    Instrument.prototype.changeVolume = function() {
-//        this.gainNode.gain.value = this.params.gain;
-//    };
-//
-//    Instrument.prototype.play = function(freq) {
-//
-//        oscillatorNode = audioCtx.createOscillator();
-//
-//        oscillatorNode.connect(this.gainNode);
-//
-//        oscillatorNode.frequency.value = freq;
-//        oscillatorNode.type = this.type;
-//        //this.params.device.gainNode.gain.setValueAtTime(velocity, audioCtx.currentTime + start);
-//        oscillatorNode.start(0);
-//        //oscillatorNode.stop(end);
-//        this.chords.push(oscillatorNode);
-//        return oscillatorNode;
-//    };
-//
-//    Instrument.prototype.stopAll = function () {
-//        for ( var i = 0 ; i < this.chords.length ; i++ ) {
-//            this.chords[i].stop(0);
-//        }
-//    };
-//
-//    Instrument.prototype.stop = function(frequency) {
-//        var new_chords = [];
-//        for ( var i = 0 ; i < this.chords.length ; i++ ) {
-//            if ( Math.round(this.chords[i].frequency.value) === Math.round(frequency) ) {
-//                this.chords[i].stop(0);
-//                this.chords[i].disconnect();
-//            } else {
-//                new_chords.push(this.chords[i]);
-//            }
-//        }
-//        this.chords = new_chords;
-//    };
-//    return {
-//        getInstance : function ( id, device ) {
-//            return new Instrument( id, device );
-//        }
-//    };
-//}]);
+        }
+        return Instrument;
+    })();
+    return SimpleSampler;
+}]);
 /**
  * Created by 12059_000 on 12/9/2015.
  */
@@ -2199,17 +2951,40 @@ angular.module('simpleSynth', [])
                     pan     : 0,
                 }
             };
-
-            var initOscillators = function (freq) {
+            /*
+            schedule {
+                start, stop, velocity
+            }
+             */
+            var initOscillators = function (freq, schedule, velocity) {
+                if ( !velocity ) {
+                    velocity = 127;
+                }
+                velocity /= 127;
+                var scheduled;
+                if ( !schedule ) {
+                    var schedule = {
+                        start : 0,
+                        stop  : 0
+                    }
+                    scheduled = false;
+                } else {
+                    scheduled = true;
+                }
+                //console.log(velocity);
                 var oscillators = {
                     freq : freq,
                     osc : []
                 };
+                var velocityNode = audioCtx.createGain();
+                velocityNode.gain.value = parseFloat(velocity); // TODO Tune velocity
+                //console.log(velocityNode.gain.value);
                 if ( params.osc1.enabled ) {
                     var osc1 = audioCtx.createOscillator();
                     osc1.name = devname;
                     osc1.connect(stereoPanner1);
                     stereoPanner1.connect(params.output);
+                    //velocityNode.connect(params.output);
                     for ( var i = 0 ; i < Math.abs(params.osc1.octave) ; i++ ) {
                         if ( params.osc1.octave < 0 ) {
                             freq -= freq/2;
@@ -2220,14 +2995,19 @@ angular.module('simpleSynth', [])
                     osc1.frequency.value = freq;
                     osc1.type = params.osc1.synthType;
                     //this.params.device.gainNode.gain.setValueAtTime(velocity, audioCtx.currentTime + start);
-                    osc1.start(0);
+                    osc1.start(schedule.start);
                     oscillators.osc.push(osc1);
+                    if ( scheduled ) {
+                        osc1.stop(schedule.stop);
+                    }
+
                 }
                 if ( params.osc2.enabled ) {
                     osc2 = audioCtx.createOscillator();
                     osc2.name = devname;
                     osc2.connect(stereoPanner2);
                     stereoPanner2.connect(params.output);
+                    //velocityNode.connect(params.output);
                     for ( var i = 0 ; i < Math.abs(params.osc2.octave) ; i++ ) {
                         if ( params.osc2.octave < 0 ) {
                             freq -= freq/2;
@@ -2235,25 +3015,28 @@ angular.module('simpleSynth', [])
                             freq += freq*2;
                         }
                     }
-                    osc2.frequency.value = freq ;
+                    osc2.frequency.value = freq;
 
                     osc2.type = params.osc2.synthType;
                     //this.params.device.gainNode.gain.setValueAtTime(velocity, audioCtx.currentTime + start);
-                    osc2.start(0);
+                    osc2.start(schedule.start);
                     oscillators.osc.push(osc2);
+                    if ( scheduled ) {
+                        osc2.stop(schedule.stop);
+                    }
                 }
                 return oscillators;
             };
-            var play = function(freq,name) {
-                var osc = initOscillators(freq);
+            var play = function(freq, schedule, velocity) {
+                var osc = initOscillators(freq, schedule, velocity);
                 activeNotes.push(osc);
-                //console.log(freq,name, osc);
             };
 
-            var stop = function(frequency) {
+
+            var stop = function(frequency, stopAll) {
                 var newNotes = [];
                 for ( var i = 0 ; i < activeNotes.length ; i++ ) {
-                    if ( Math.round(activeNotes[i].freq) === Math.round(frequency) ) {
+                    if ( (Math.round(activeNotes[i].freq) === Math.round(frequency)) || stopAll ) {
                         activeNotes[i].osc.forEach(function(o){
                             o.stop(0);
                             //console.log(o.name);

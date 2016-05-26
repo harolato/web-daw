@@ -5,191 +5,292 @@ angular.module('Sequencer',['Devices', 'keyboard']).
 controller('sequencerController', [function(){
     //var vm = $scope;
 }])
-.factory('sequencerService', ['devicesService', 'keyboardHelperService','$timeout','$interval', 'sequencerWorkerService','audioCtx','$q', function(devices, keyboard, $timeout, $interval, worker, ctx, $q){
-    var Scheduler = function () {
-        this.BPM = 60;
-        this.beatLen = 60/this.BPM; // 60 seconds multiplied by BPM
-        this.devices = devices.getAll();
-        this.nextNoteIndex = 0;
-        this.allTracks = [];
-        this.lookahead = 0.02; // seconds
-        this.interval = 25; // milliseconds
-        this.nextNoteTime;
-        this.promise = null;
-        this.isPlaying = false;
-        this.currentTime = 0;
-        this.startTime = null;
+.directive("schedulerControls", ["schedulerService","$timeout", "$window", "$rootScope",function(schedulerService, $timeout, $window, $rootScope){
+    return {
+        restrict: "A",
+        scope: true,
+        link: function ( $scope ) {
+            $scope.hasFinished = false;
+            $rootScope.$on("finishedTrack", function(){
+                $scope.hasFinished = true;
+            });
+            $scope.play = function (){
+                schedulerService.play();
+                var seeker = document.querySelectorAll(".seeker");
+                if ( $scope.params.isPlaying ) {
+                    if ( $scope.hasFinished ) {
+                        angular.forEach(seeker, function (e) {
 
-        this.init();
+                            e.style.WebkitTransition = "";
+                            e.style.MozTransition = "";
+                            e.style.left = "" + 0 + "px";
+                        });
+                        $scope.hasFinished = false;
+                    }
+                    $timeout(function(){
+                        angular.forEach(seeker, function(e){
+                            if ( $scope.hasFinished ) {
+                                e.style.WebkitTransition = "";
+                                e.style.MozTransition = "";
+                                e.style.left = "" + 0 + "px";
+                            }
+                            e.style.WebkitTransition = "all " + ($scope.params.trackLength - $scope.params.currentTime) + "s linear";
+                            e.style.MozTransition = "all " + ($scope.params.trackLength - $scope.params.currentTime) + "s linear";
+                            e.style.left = "" + $scope.params.trackLength*80 + "px";
+                        })
+                    },0);
+
+                } else {
+                    angular.forEach(seeker, function(e){
+                        e.style.left = $scope.params.currentTime*80 + "px";
+                        e.style.WebkitTransition = "";
+                        e.style.MozTransition = "";
+                    })
+                }
+            };
+        },
+        controller: function ( $scope ) {
+            //console.log(schedulerService);
+            $rootScope.$on("BPMChanged", function (){
+                //console.log("FIRE");
+            });
+            $scope.params = schedulerService.params;
+            $scope.$watch('params.BPM', function (n){
+                schedulerService.changeBPM(n);
+            });
+            $scope.togglePlayButton = function () {
+                return {
+                    'fa-play' : !$scope.params.isPlaying,
+                    'fa-pause' : $scope.params.isPlaying
+                }
+            };
+
+        },
+        templateUrl : "app/components/sequencer/view.html"
+    }
+}])
+.service("schedulerService", ['devicesService', 'keyboardHelperService','$timeout','$interval', 'sequencerWorkerService','audioCtx','$q','$rootScope', function(devices, keyboard, $timeout, $interval, worker, ctx, $q, $rootScope){
+    var params = {
+        BPM         : 120,
+        lookahead   : 0.01, // seconds50
+        isPlaying   : false,
+        currentTime : 0,
+        trackLength : 0,
+        gap         : 0
     };
 
-    Scheduler.prototype.getTracks = function () {
-            var defered = $q.defer();
-            var tmp = [];
-            // Fetch all tracks
-            defered.notify("about to update tracks");
-            this.devices.forEach(function(device) {
-                if (device.enabled){
-                // Save to temporary array for comparison
-                    tmp = tmp.concat(device.notes);
-                }
-            });
-            // compare new track to current one
-            var unique = tmp.concat(this.allTracks).filter(function() {
-                var seen = {};
-                return function(element, index, array) {
-                    return !( element.start+element.end+element.note in seen) && (seen[element.start+element.end+element.note] = 1);
-                };
-            }());
-            // If no changes found terminate function
-            //console.log([unique.length, this.allTracks.length, tmp]);
+    var interval = 10/params.BPM*1000; // 30 - eighth, 15 - sixteenth, 60 - quarter
+    var beatLen = 60/params.BPM; // 60 seconds multiplied by BPM. one quarter note duration. seconds
+    var tracks = null;
+    var nextNoteIndex = 0;
+    var allTracks = [];
+    var nextNoteTime;
+    var startTime = null;
+    var scheduled = true;
+    var pauseTime = 0;
 
-            if ( unique.length == this.allTracks.length ) {
-                defered.resolve({message : "no changes found"});
-            } else {
-                // otherwise update track list
-                console.log("please wait...");
-                this.allTracks = angular.copy(tmp);
-                //this.allTracks.sort(sortNotes);
-                defered.resolve({message : "Sort complete"});
-            }
+    var changeBPM = function (BPM) {
+        params.BPM = BPM;
+        interval = 10/params.BPM*1000; // 30 - eighth, 15 - sixteenth, 60 - quarter
+        beatLen = 60/params.BPM; // 60 seconds multiplied by BPM. one quarter note duration. seconds
+        worker.interval = interval;
+    };
+
+    var getTracks = function () {
+        var defered = $q.defer();
+        var tmp = [];
+        // Fetch all tracks
+        defered.notify("about to update tracks");
+        tracks = devices.getAll();
+        tracks.forEach(function(device) {
+            // Save to temporary array for comparison
+            if ( device.notes )
+            tmp = tmp.concat(device.notes);
+        });
+        // compare new track to current one
+        var unique = tmp.concat(allTracks).filter(function() {
+            var seen = {};
+            return function( element ) {
+                return !( element.start+element.end+element.note in seen) && (seen[element.start+element.end+element.note] = 1);
+            };
+        }());
+        // If no changes found terminate function
+        //console.log([unique.length, allTracks.length, tmp]);
+
+        if ( unique.length == allTracks.length ) {
+            defered.resolve({message : "no changes found"});
+        } else {
+            // otherwise update track list
+            //console.log("please wait...");
+            allTracks = angular.copy(tmp);
+
+            allTracks.sort(sortNotes);
+            defered.resolve({message : "Sort complete"});
+        }
         return defered.promise;
     };
 
-    Scheduler.prototype.play = function (stop) {
+    var play = function (stop) {
 
         if ( stop ) {
             worker.stop();
-            this.isPlaying = false;
-            return false;
+            params.isPlaying = false;
+            nextNoteIndex = 0;
+            nextNoteTime = 0;
+            params.currentTime = 0;
+            params.trackLength = 0;
+            startTime = 0;
+            pauseTime = 0;
+            $rootScope.$emit("finishedTrack");
+            return;
         }
-        var updateTracks = this.getTracks();
-        var self = this;
-        updateTracks.then(function(res){
-            //console.log(self.calculateNoteTiming(self.allTracks[self.allTracks.length-1]));
-            console.log(res.message);
-            self.isPlaying = !self.isPlaying;
-            if ( self.isPlaying ) {
-                worker.start();
-                self.nextNoteTime = self.calculateNoteTiming(self.allTracks[self.nextNoteIndex]).time.start + ctx.currentTime;
 
-                console.log(self.nextNoteTime, ctx.currentTime);
-                //self.startTime =
-            } else {
-                worker.stop();
-                //console.log(self.devices);
-                self.devices.forEach(function(d){
-                    //console.log(d.instrument_instance);
-                    d.instrument_instance.stopAll();
-                });
-                self.startTime = null;
-            }
-        });
+        params.isPlaying = !params.isPlaying;
+        if ( params.isPlaying ) {
+            var updateTracks = getTracks();
+            updateTracks.then(function(res){
+                //allTracks.forEach(function(note){
+                //    console.log(calculateNoteTiming(note).time);
+                //});
+                params.trackLength = calculateNoteTiming(allTracks[allTracks.length-1]).time.end;
+                worker.start();
+                startTime = ctx.currentTime;
+                if ( pauseTime > 0 ) {
+                    startTime -= pauseTime;
+                    console.log("Pause time: ", pauseTime, startTime);
+                }
+
+                nextNoteTime = calculateNoteTiming(allTracks[nextNoteIndex]).time.start;
+            });
+        } else {
+            worker.stop();
+            tracks.forEach(function (track){
+                track.instrument_instance.stop(0, true);
+            });
+
+            pauseTime = ctx.currentTime - startTime;
+            //console.log("Pause time: ", pauseTime, startTime);
+        }
     };
 
-    Scheduler.prototype.getCurrentTime = function () {
-        return this.currentTime;
-    }
 
-    Scheduler.prototype.init = function () {
-        var self = this;
-        worker.worker.onmessage = function (e) {
+    var initialize = function () {
+        //console.log("inited");
+        //console.log(worker);
+        worker.WebWorker.onmessage = function (e) {
             if ( e.data == "tick" ) {
-                self.schedule();
+                schedule();
             } else {
-                console.log({"message" : e.data});
+                //console.log({"message" : e.data});
             }
         };
-        worker.worker.postMessage({"interval" : this.interval});
+        worker.interval = interval;
     };
 
-    Scheduler.prototype.scheduleNote = function ( note ) {
-        var device = devices.get(note.target);
-        device.instrument_instance.play(this.nextNoteTime, this.nextNoteTime + note.time.end,note.velocity, keyboard.getFrequencyOfNote(note.note));
-        console.log("scheduleNote()",this.nextNoteTime);
+    var scheduleNote = function () {
+        //var device = devices.get(note.target);
+        //console.log(device);
+        scheduled = false;
+        var note = allTracks[nextNoteIndex];
+        var schedule = {
+            start : ctx.currentTime + params.gap,
+            stop  : ctx.currentTime + note.time.end - note.time.start
+        };
+        console.log("Schedule: ", schedule);
+        //console.log("Note object: " , note);
+        note.target.instrument_instance.play( keyboard.getFrequencyOfNote(note.note), schedule,note.velocity);
+        nextNote();
+        scheduled = true;
+        //console.log("scheduleNote()",nextNoteTime);
 
-        //this.nextNoteIndex++;
+        //nextNoteIndex++;
     };
 
-    Scheduler.prototype.nextNote = function(returnNote){
+    var nextNote = function(returnNote){
         //var ct = ctx.currentTime;
-        //if ( this.nextNoteIndex >= this.allTracks.length ) return false;
-        //var next = this.calculateNoteTiming(this.allTracks[this.nextNoteIndex]);
+        //if ( nextNoteIndex >= allTracks.length ) return false;
+        //var next = calculateNoteTiming(allTracks[nextNoteIndex]);
         //if ( returnNote ){
         //    next.time.end += ct;
         //    next.time.start += ct
         //    return next;
         //}
         //
-        //var lookahead = ct + this.lookahead;
-        //if ( ( next.time.start  < lookahead) && this.nextNoteIndex < this.allTracks.length ) {
-        //    console.log(true,(next.time.start+ct), lookahead, this.startTime);
+        //var lookahead = ct + lookahead;
+        //if ( ( next.time.start  < lookahead) && nextNoteIndex < allTracks.length ) {
+        //    console.log(true,(next.time.start+ct), lookahead, startTime);
         //    return true;
         //} else {
         //    console.log(false,(next.time.start+ct), lookahead);
         //    return false;
         //
         //}
-        this.nextNoteIndex++;
-        var nn = this.calculateNoteTiming(this.allTracks[this.nextNoteIndex]);
-        var pn = this.calculateNoteTiming(this.allTracks[this.nextNoteIndex-1]);
-        this.nextNoteTime += nn.time.start - pn.time.start;
-        console.log('nextNote()',this.nextNoteTime, this.nextNoteIndex, nn,pn);
+        nextNoteIndex++;
+        if ( !allTracks[nextNoteIndex] ) return;
+        var nn = calculateNoteTiming(allTracks[nextNoteIndex]);
+        //var pn = calculateNoteTiming(allTracks[nextNoteIndex-1]);
+        nextNoteTime = nn.time.start;
+        //console.log('nextNote()',nextNoteTime, nextNoteIndex, nn,pn);
     };
 
-    Scheduler.prototype.increaseTimer = function(){
-        var deferred = new $q.defer();
-        this.currentTime += this.interval;
-        deferred.resolve("done");
-        return deferred.promise;
+    var increaseTimer = function(){
+        $timeout(function(){
+            params.currentTime = ctx.currentTime - startTime;
+        },0);
     };
 
-    Scheduler.prototype.schedule = function () {
-        console.log("schedulin");
+    var schedule = function () {
+        console.log("schedulin***************************************************");
 
-        //var updateTracks = this.getTracks();
+        //var updateTracks = getTracks();
         //updateTracks.then(function (r){
-        var self = this;
-        this.increaseTimer().then(function(){
-            self.getCurrentTime();
-        });
-        //console.log(this.currentTime);
-            while ( this.nextNoteTime < ctx.currentTime + this.lookahead && this.nextNoteIndex < this.allTracks.length ) {
-
-                console.log("loopin");
-                //console.log(ctx.currentTime);
-                this.scheduleNote(this.calculateNoteTiming(this.allTracks[this.nextNoteIndex]));
-                this.nextNote();
-                //if ( this.nextNoteIndex >= this.allTracks.length ) this.play(true);
-            }
-        if ( this.nextNoteIndex >= this.allTracks.length ) {
-            this.play(true);
-            this.nextNoteIndex = 0;
-            this.currentTime = 0;
+        console.log(params.trackLength, params.currentTime);
+        if ( params.trackLength <= params.currentTime ) {
+            play(true);
+            return;
         };
+        increaseTimer();
+        console.log("Timings: ",nextNoteTime, (params.currentTime + params.lookahead));
+        while ( parseFloat(nextNoteTime) < parseFloat(params.currentTime + params.lookahead) && nextNoteIndex < allTracks.length && params.isPlaying ) {
+            console.log("loopin");
+            //console.log(ctx.currentTime);
+            if ( scheduled ) {
+                scheduleNote();
+            }
+            //if ( nextNoteIndex >= allTracks.length ) play(true);
+        }
         //});
     };
     var sortNotes = function (a, b) {
 
-        var astart  = breakNoteCoordinates(a.start);
-        var bstart  = breakNoteCoordinates(b.start);
-
-        if ( astart['bar'] > bstart['bar'] ) {
+        //var astart  = breakNoteCoordinates(a.start);
+        //var bstart  = breakNoteCoordinates(b.start);
+        //
+        //if ( astart['bar'] > bstart['bar'] ) {
+        //    return 1;
+        //} else if ( astart['bar'] == bstart['bar'] ) {
+        //    if ( astart['beat'] == bstart['beat'] ) {
+        //        if ( astart['eighth'] == bstart['eighth'] ) {
+        //            return 0;
+        //        } else if ( astart['eighth'] > bstart['eighth'] ) {
+        //            return 1;
+        //        } else {
+        //            return -1;
+        //        }
+        //    } else if ( astart['quarter'] > bstart['quarter'] ) {
+        //        return 1;
+        //    } else {
+        //        return -1;
+        //    }
+        //} else {
+        //    return -1;
+        //}
+        a = calculateNoteTiming(a);
+        b = calculateNoteTiming(b);
+        if ( a.time.start > b.time.start ) {
             return 1;
-        } else if ( astart['bar'] == bstart['bar'] ) {
-            if ( astart['beat'] == bstart['beat'] ) {
-                if ( astart['eighth'] == bstart['eighth'] ) {
-                    return 0;
-                } else if ( astart['eighth'] > bstart['eighth'] ) {
-                    return 1;
-                } else {
-                    return -1;
-                }
-            } else if ( astart['quarter'] > bstart['quarter'] ) {
-                return 1;
-            } else {
-                return -1;
-            }
+        } else if (a.time.start == b.time.start ) {
+            return 0;
         } else {
             return -1;
         }
@@ -200,47 +301,337 @@ controller('sequencerController', [function(){
         //console.log(brake);
         return {
             bar    : parseInt(brake[0]),
-            beat    : parseInt(brake[2]),
-            eighth  : parseInt(brake[1])
+            beat    : parseInt(brake[1]),
+            eighth  : parseInt(brake[2])
         };
     };
 
-    Scheduler.prototype.noteLength = function ( type ) {
+    var noteLength = function ( type ) {
+        //console.log(beatLen);
         switch ( type ) {
-            case "bar"      : return this.beatLen*4; // Length of a bar (4 quarter notes)
-            case "beat"  : return this.beatLen; // Length of a beat  (1 quarter note)
-            case "eighth"   : return (this.beatLen/2); // Length of a sixteenth note ( 1/8 of a quarter note)
+            case "bar"      : return beatLen*4; // Length of a bar (4 quarter notes)
+            case "beat"  : return beatLen; // Length of a beat  (1 quarter note)
+            case "eighth"   : return (beatLen/2); // Length of a eighth note ( 1/8  note)
             default: return false;
         }
     };
 
-    Scheduler.prototype.calculateNoteTiming = function (note) {
+    var calculateNoteTiming = function (note) {
         var start = breakNoteCoordinates(note.start);
         var end = breakNoteCoordinates(note.end);
-    //console.log(start,end);
+        //console.log(start,end);
         var noteStartTime =
-            ( start.bar * this.noteLength("bar")) +
-            ( start.beat * this.noteLength("beat") ) +
-            ( start.eighth * this.noteLength("eighth") );
+            ( start.bar * noteLength("bar")) +
+            ( start.beat * noteLength("beat") ) +
+            ( start.eighth * noteLength("eighth") );
         var noteEndTime =
-            ( end.bar * this.noteLength("bar")) +
-            ( end.beat * this.noteLength("beat") ) +
-            ( end.eighth * this.noteLength("eighth") );
+            ( end.bar * noteLength("bar")) +
+            ( end.beat * noteLength("beat") ) +
+            ( end.eighth * noteLength("eighth") );
         note.time = {
             start  : noteStartTime,
             end    : noteEndTime
         };
         return note;
     };
-    return {
-        getScheduler : function () {
-            return new Scheduler();
-        }
-    };
 
+
+
+    initialize();
+
+    this.play = play;
+    this.calculateNoteTiming = calculateNoteTiming;
+    this.changeBPM = changeBPM;
+    this.params = params;
+}])
+.factory('sequencerService', ['devicesService', 'keyboardHelperService','$timeout','$interval', 'sequencerWorkerService','audioCtx','$q','$rootScope', function(devices, keyboard, $timeout, $interval, worker, ctx, $q, $rootScope){
+    var Scheduler = function () {
+        var params = {
+            BPM         : 50,
+            lookahead   : 0.01, // seconds50
+            interval    : 10/120*1000, // 30 - eighth, 15 - sixteenth, 60 - quarter
+            isPlaying   : false,
+            currentTime : 0,
+            trackLength : 0,
+            gap         : 0
+        };
+
+
+        var beatLen = 60/params.BPM; // 60 seconds multiplied by BPM. one quarter note duration. seconds
+        var tracks = null;
+        var nextNoteIndex = 0;
+        var allTracks = [];
+        var nextNoteTime;
+        var startTime = null;
+        var scheduled = true;
+        var pauseTime = 0;
+
+        var getTracks = function () {
+                var defered = $q.defer();
+                var tmp = [];
+                // Fetch all tracks
+                defered.notify("about to update tracks");
+                tracks = devices.getAll();
+                tracks.forEach(function(device) {
+                    if (device.enabled){
+                    // Save to temporary array for comparison
+                        tmp = tmp.concat(device.notes);
+                    }
+                });
+                // compare new track to current one
+                var unique = tmp.concat(allTracks).filter(function() {
+                    var seen = {};
+                    return function( element ) {
+                        return !( element.start+element.end+element.note in seen) && (seen[element.start+element.end+element.note] = 1);
+                    };
+                }());
+                // If no changes found terminate function
+                //console.log([unique.length, allTracks.length, tmp]);
+    
+                if ( unique.length == allTracks.length ) {
+                    defered.resolve({message : "no changes found"});
+                } else {
+                    // otherwise update track list
+                    console.log("please wait...");
+                    allTracks = angular.copy(tmp);
+
+                    allTracks.sort(sortNotes);
+                    defered.resolve({message : "Sort complete"});
+                }
+            return defered.promise;
+        };
+    
+        var play = function (stop) {
+    
+            if ( stop ) {
+                worker.stop();
+                params.isPlaying = false;
+                nextNoteIndex = 0;
+                nextNoteTime = 0;
+                params.currentTime = 0;
+                params.trackLength = 0;
+                startTime = 0;
+                pauseTime = 0;
+                $rootScope.$emit("finishedTrack");
+                return;
+            }
+
+            params.isPlaying = !params.isPlaying;
+            if ( params.isPlaying ) {
+                var updateTracks = getTracks();
+                updateTracks.then(function(res){
+                    //allTracks.forEach(function(note){
+                    //    console.log(calculateNoteTiming(note).time);
+                    //});
+                    params.trackLength = calculateNoteTiming(allTracks[allTracks.length-1]).time.end;
+                    worker.start();
+                    startTime = ctx.currentTime;
+                    if ( pauseTime > 0 ) {
+                        startTime -= pauseTime;
+                        //console.log("Pause time: ", pauseTime, startTime);
+                    }
+
+                    nextNoteTime = calculateNoteTiming(allTracks[nextNoteIndex]).time.start;
+                });
+            } else {
+                worker.stop();
+                tracks.forEach(function (track){
+                    track.instrument_instance.stop(0, true);
+                });
+
+                pauseTime = ctx.currentTime - startTime;
+                //console.log("Pause time: ", pauseTime, startTime);
+            }
+        };
+
+    
+        var initialize = function () {
+            //console.log("inited");
+            //console.log(worker);
+            worker.WebWorker.onmessage = function (e) {
+                if ( e.data == "tick" ) {
+                    schedule();
+                } else {
+                    //console.log({"message" : e.data});
+                }
+            };
+            worker.interval = params.interval;
+        };
+    
+        var scheduleNote = function () {
+            //var device = devices.get(note.target);
+            //console.log(device);
+            scheduled = false;
+            var note = allTracks[nextNoteIndex];
+            var schedule = {
+                start : ctx.currentTime + params.gap,
+                stop  : ctx.currentTime + note.time.end - note.time.start
+            };
+            console.log("Schedule: ", schedule);
+            //console.log("Note object: " , note);
+            note.target.instrument_instance.play( keyboard.getFrequencyOfNote(note.note), schedule,note.velocity);
+            nextNote();
+            scheduled = true;
+            //console.log("scheduleNote()",nextNoteTime);
+    
+            //nextNoteIndex++;
+        };
+    
+        var nextNote = function(returnNote){
+            //var ct = ctx.currentTime;
+            //if ( nextNoteIndex >= allTracks.length ) return false;
+            //var next = calculateNoteTiming(allTracks[nextNoteIndex]);
+            //if ( returnNote ){
+            //    next.time.end += ct;
+            //    next.time.start += ct
+            //    return next;
+            //}
+            //
+            //var lookahead = ct + lookahead;
+            //if ( ( next.time.start  < lookahead) && nextNoteIndex < allTracks.length ) {
+            //    console.log(true,(next.time.start+ct), lookahead, startTime);
+            //    return true;
+            //} else {
+            //    console.log(false,(next.time.start+ct), lookahead);
+            //    return false;
+            //
+            //}
+            nextNoteIndex++;
+            if ( !allTracks[nextNoteIndex] ) return;
+            var nn = calculateNoteTiming(allTracks[nextNoteIndex]);
+            //var pn = calculateNoteTiming(allTracks[nextNoteIndex-1]);
+            nextNoteTime = nn.time.start;
+            //console.log('nextNote()',nextNoteTime, nextNoteIndex, nn,pn);
+        };
+    
+        var increaseTimer = function(){
+            $timeout(function(){
+                params.currentTime = ctx.currentTime - startTime;
+            },0);
+        };
+    
+        var schedule = function () {
+            //console.log("schedulin***************************************************");
+    
+            //var updateTracks = getTracks();
+            //updateTracks.then(function (r){
+            //console.log(params.trackLength, params.currentTime);
+            if ( params.trackLength <= params.currentTime ) {
+                play(true);
+                return;
+            };
+            increaseTimer();
+            //console.log("Timings: ",nextNoteTime, (params.currentTime + params.lookahead));
+            while ( parseFloat(nextNoteTime) < parseFloat(params.currentTime + params.lookahead) && nextNoteIndex < allTracks.length && params.isPlaying ) {
+                //console.log("loopin");
+                //console.log(ctx.currentTime);
+                if ( scheduled ) {
+                    scheduleNote();
+                }
+                //if ( nextNoteIndex >= allTracks.length ) play(true);
+            }
+            //console.log("end schedule");
+            //});
+        };
+        var sortNotes = function (a, b) {
+
+            //var astart  = breakNoteCoordinates(a.start);
+            //var bstart  = breakNoteCoordinates(b.start);
+            //
+            //if ( astart['bar'] > bstart['bar'] ) {
+            //    return 1;
+            //} else if ( astart['bar'] == bstart['bar'] ) {
+            //    if ( astart['beat'] == bstart['beat'] ) {
+            //        if ( astart['eighth'] == bstart['eighth'] ) {
+            //            return 0;
+            //        } else if ( astart['eighth'] > bstart['eighth'] ) {
+            //            return 1;
+            //        } else {
+            //            return -1;
+            //        }
+            //    } else if ( astart['quarter'] > bstart['quarter'] ) {
+            //        return 1;
+            //    } else {
+            //        return -1;
+            //    }
+            //} else {
+            //    return -1;
+            //}
+            a = calculateNoteTiming(a);
+            b = calculateNoteTiming(b);
+            if ( a.time.start > b.time.start ) {
+                return 1;
+            } else if (a.time.start == b.time.start ) {
+                return 0;
+            } else {
+                return -1;
+            }
+        };
+
+        var breakNoteCoordinates = function (coords) {
+            var brake = coords.split(".");
+            //console.log(brake);
+            return {
+                bar    : parseInt(brake[0]),
+                beat    : parseInt(brake[1]),
+                eighth  : parseInt(brake[2])
+            };
+        };
+
+        var noteLength = function ( type ) {
+            switch ( type ) {
+                case "bar"      : return beatLen*4; // Length of a bar (4 quarter notes)
+                case "beat"  : return beatLen; // Length of a beat  (1 quarter note)
+                case "eighth"   : return (beatLen/2); // Length of a eighth note ( 1/8  note)
+                default: return false;
+            }
+        };
+
+        var calculateNoteTiming = function (note) {
+            var start = breakNoteCoordinates(note.start);
+            var end = breakNoteCoordinates(note.end);
+        //console.log(start,end);
+            var noteStartTime =
+                ( start.bar * noteLength("bar")) +
+                ( start.beat * noteLength("beat") ) +
+                ( start.eighth * noteLength("eighth") );
+            var noteEndTime =
+                ( end.bar * noteLength("bar")) +
+                ( end.beat * noteLength("beat") ) +
+                ( end.eighth * noteLength("eighth") );
+            note.time = {
+                start  : noteStartTime,
+                end    : noteEndTime
+            };
+            return note;
+        };
+
+        initialize();
+
+        return {
+            get params() {
+                return params;
+            },
+            get interval(){
+              return params.interval;
+            },
+            get BPM () {
+              return params.BPM;
+            },
+            set BPM ( a ) {
+                params.BPM = a;
+            },
+            play : function(){
+                $timeout(function(){
+                    play();
+                },0);
+            }
+        };
+    };
+    return new Scheduler();
     //var play = function () {
     //
-    //    this.devices.forEach(function(device){
+    //    devices.forEach(function(device){
     //        var device = device;
     //        if ( device.enabled ) {
     //            //device.notes.sort(sortNotes);
@@ -278,31 +669,40 @@ controller('sequencerController', [function(){
     //    //console.log(allTracks);
     //
     //};
-    //this.stop = function (){
+    //stop = function (){
     //    var ap = AudioParam.cancelScheduledValues(ctx.currentTime);
     //}
 
 }])
 .service('sequencerWorkerService', [function () {
-    var SequencerWorker = function (  ) {
-        this.worker = new Worker('app/components/sequencer/sequencerWorker.js');
-    };
-    SequencerWorker.prototype.stop = function () {
-        this.worker.postMessage("stop");
-    };
-    SequencerWorker.prototype.start = function () {
-        this.worker.postMessage("start");
-    };
-    SequencerWorker.prototype.changeInterval = function ( lookaheadTime ) {
-        this.worker.postMessage({"interval" : lookaheadTime});
-    };
-
+    function SequencerWorker () {
+        var WebWorker = new Worker('app/components/sequencer/sequencerWorker.js');
+        var stop = function () {
+            WebWorker.postMessage("stop");
+        }
+        var start = function () {
+            WebWorker.postMessage("start");
+        }
+        var changeInterval = function ( lookaheadTime ) {
+            WebWorker.postMessage({"interval" : lookaheadTime});
+        }
+        return {
+            get WebWorker () {
+                return WebWorker;
+            },
+            set interval (a) {
+                changeInterval(a);
+            },
+            start : start,
+            stop  : stop
+        }
+    }
     return new SequencerWorker();
 }])
 .controller('schedulerController',['sequencerService','$scope',function(sequencer, $scope){
     var self = $scope;
     self.sequencer = sequencer.getScheduler();
-    console.log(self.sequencer);
+    //console.log(self.sequencer);
     self.play = function () {
         self.sequencer.play();
     };
@@ -314,6 +714,24 @@ controller('sequencerController', [function(){
         //console.log(n,o);
         //self.currentTime = n;
     });
+}])
+.directive("scrollBar", [function(){
+    return {
+        restrict    : "A",
+        scope : true,
+        transclude: true,
+        link : function ($scope, $el) {
+            var scrollHandler = function (e){
+                var notePreviews = document.querySelectorAll(".note-preview, .timescale-wrapper-outter");
+                var self = angular.element(this)[0];
+                angular.forEach(angular.element(notePreviews), function(e) {
+                    e.scrollLeft = self.scrollLeft;
+                });
+            };
+            angular.element($el).bind('scroll',scrollHandler);
+        },
+        template : '<div class="scroll-bar-wrapper">&nbsp;</div>'
+    }
 }])
 .service('notesFactory', [function() {
     return {
