@@ -15,6 +15,9 @@ coverage
 
 # Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
 .grunt
+gulpfile.js
+
+asd.js
 
 # node-waf configuration
 .lock-wscript
@@ -29,6 +32,14 @@ build/Release
 # https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git
 node_modules
 public/assets/*
-!public/assets/scripts/*
-!public/assets/stylesheets/*
-
+#!public/assets/scripts/
+#!public/assets/font-awesome/css/*
+#!public/assets/font-awesome/css/
+#!public/assets/font-awesome/fonts/*
+#!public/assets/font-awesome/fonts/
+#!public/assets/stylesheets/
+#!public/assets/stylesheets/*
+#!public/assets/fonts/
+#!public/assets/fonts/*
+#!public/assets/images/
+#!public/assets/images/*

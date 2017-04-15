@@ -9,11 +9,14 @@
 
     <!-- Bootstrap -->
     <link href="assets/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!--font awesome-->
+    <link href="assets/font-awesome/css/font-awesome.min.css" rel="stylesheet">
     <!--custom-->
     <link href="assets/stylesheets/stylesheet.css" rel="stylesheet">
     <!--ngular-->
     <script src="assets/angular/angular.min.js"></script>
-    <script src="assets/scripts/qwerty-hancock.min.js"></script>
+    <!--tuna-->
+    <script src="assets/scripts/tuna-min.js"></script>
     <script src="app.js"></script>
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -22,27 +25,103 @@
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
 </head>
-<body ng-app="waw" ng-controller="mainController as main">
-<h1>{{ main.message }}</h1>
-<master-gain></master-gain>
-<filter></filter>
-<button add-component="device" type="button" ng-click="createNew()">Add new</button>
-<hr/>
-<div ng-controller="devicesController">
+<body ng-app="waw" ng-controller="mainController">
+<div id="top-bar" class="container">
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="row">
+                <div class="col-sm-5">
+                    <h1>WEB DAW</h1>
+                </div>
+                <div class="col-sm-7">
+                    <div class="new-project">
+                        <div class="plus-button inl">
+                            <span class="fa fa-plus"></span>
+                        </div>
+                        <div class="name-input inl">
+                            <input type="text" placeholder="New project...">
+                        </div>
+                        <div class="action-buttons inl">
+                            <span class="fa fa-save"></span>
+                            <span class="fa fa-close"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 text-right">
+            <div class="row">
+                <div scheduler-controls></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-6">
+            <div id="current-time-box">
+                Current time: <span>{{currentTime}}</span>
+            </div>
+        </div>
+        <div class="col-sm-6 text-right">
+            <div align="right" id="scale-timeline-box">
+                Scale timeline: <span>+</span><span>-</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container devices-container" ng-controller="devicesController as devices">
+
+    <div class="row">
+        <div class="col-sm-9 col-sm-offset-3 timescale">
+            <div class="time-seeker"></div>
+            <div class="timescale-wrapper-outter">
+                <div class="timescale-wrapper-inner">
+                    <canvas id="timescale-canvas" width="5000">
+                        <script>
+                            var c = document.getElementById("timescale-canvas");
+                            var ctx = c.getContext("2d");
+                            ctx.font = "12px Arial";
+                            ctx.textAlign = "center";
+                            for (var i = 0 ; i < 50 ; i++)
+                            ctx.fillText(i, (i*5*16), 10);
+                        </script>
+                    </canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="device row" device identification="squaresynth" notes="1" enabled="true" instrument="simple_synth"></div>
+
+    <div class="device row" device identification="sampler" notes="2" enabled="true" instrument="simple_sampler"></div>
+
+    <div class="device row" device identification="anothersquaresynth" notes="3" enabled="true" instrument="simple_synth"></div>
+
+    <div class="row">
+        <div class="col-sm-9 col-sm-offset-3 scroll-bar" scroll-bar></div>
+    </div>
+</div>
+<div class="container add-new-device-container" add-new-device>
 
 </div>
-<div id="keyboard"></div>
-<script>
-    var keyboard = new QwertyHancock({
-        id: 'keyboard',
-        width: 600,
-        height: 150,
-        octaves: 2,
-        startNote: 'C3',
-        whiteNotesColour: 'white',
-        blackNotesColour: 'black',
-        hoverColour: '#f3e939'
-    });
-</script>
+<!--<master-gain></master-gain>-->
+<!--<filter></filter>-->
+<!--<button add-component="device" type="button" ng-click="createNew()">Add new</button>-->
+<!--<hr/>-->
+<!--<div ng-controller="InstrumentsController as instruments">-->
+    <!--<div ng-repeat="(key, value) in instruments.instruments.availableInstruments">-->
+        <!--{{key}}-->
+    <!--</div>-->
+<!--</div>-->
+<div style="clear: both;"></div>
+<!--<keyboard octave="2" class="keyboard"></keyboard>-->
+<div id="instrument-settings" class="container">
+
+</div>
+<div class="footer">
+    <span><a href="mailto:haroldas.latonas@mtcmedia.co.uk?Subject=Hello">Haroldas Latonas</a></span>
+</div>
 </body>
 </html>

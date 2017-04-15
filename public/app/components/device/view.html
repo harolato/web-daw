@@ -1,6 +1,16 @@
-<h5 style="text-transform: lowercase" ng-hide="!nameChange" ng-dblclick="this.changeName()">{{device.name}}</h5>
-<input type="text" ng-model="device.name" ng-hide="nameChange"/><span ng-hide="nameChange" ng-click="this.changeName()">Close</span>
-<button add-component="synth" type="button" ng-click="createNew()">Add new synth</button>
-<button ng-click="cons()">Debug me, pls!!!</button>
-<button ng-click="toggleNoteInput()">Keyboard In:</button>
-<input type="checkbox" ng-model="device.note_input">
+
+    <div class="device-params col-sm-3" ng-class="getDeviceClass()">
+        <span class="fa-trash fa delete-device-icon" ng-click="removeDevice()"></span>
+        <span class="fa fa-wrench settings-icon" ng-click="openSettings()"></span>
+        <div class="device-name">
+            <span>{{device.name}}</span>
+        </div>
+        <div class="toggle-device-state" toggle-device-state></div>
+        <div class="toggle-keyboard-input" toggle-keyboard-input></div>
+        <div slider class="slider-outter" ng-model="params.gain" min="0" max="1"></div>
+        <!--<div ng-click="this.changeNote()">Change note</div>-->
+        <!--<button ng-click="openSettings()">settings</button>-->
+    </div>
+
+    <div class="note-preview col-sm-9" notes-preview></div>
+
