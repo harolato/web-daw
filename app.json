@@ -4,5 +4,6 @@
   "repository": "https://github.com/harolato/web-daw",
   "logo": "http://node-js-sample.herokuapp.com/node.svg",
   "keywords": ["node", "express", "static"],
-  "image": "heroku/nodejs"
+  "image": "heroku/nodejs",
+  "stack": "heroku-22"
 }
